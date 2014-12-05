@@ -31,6 +31,14 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.saveIgnoredUsers();
             }
         },
+        unignoreUser: function() {
+            var index = this.ignoredUsers.indexOf(id);
+
+            if(index !== -1) {
+                this.ignoredUsers.splice(index, 1);
+                this.saveIgnoredUsers();
+            }
+        },
         loadIgnoredUsers: function() {
             var data = localStorage.getItem('jetstuff.chathelper.ignoredusers');
 
