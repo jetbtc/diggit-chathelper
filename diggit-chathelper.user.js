@@ -2,7 +2,7 @@
 // @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.0.2
+// @version     0.0.3
 // @grant       none
 // ==/UserScript==
 
@@ -14,40 +14,71 @@ var jetstuff = window.jetstuff = jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
-        ignoredUsers: [],
+        userlist: {},
         init: function() {
-            this.loadIgnoredUsers();
+            this.cleanup();
+
+            this.loadUserlist();
 
             this.rebindChathandler();
 
-            console.log("Chathelper initialized", this.ignoredUsers);
+            console.log("Chathelper initialized", this.userlist);
         },
         isIgnored: function(id) {
-            return this.ignoredUsers.indexOf(id) !== -1;
+            return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
         },
         ignoreUser: function(id) {
-            if(!this.isIgnored(id)) {
-                this.ignoredUsers.push(id);
-                this.saveIgnoredUsers();
+            if(id !== 1 && !this.isIgnored(id)) {
+
+                this.trackUser(id);
+
+                this.userlist[id].ignored = true;
+
+                this.saveUserlist();
+
+                return true;
             }
+            return false;
         },
         unignoreUser: function(id) {
             var index = this.ignoredUsers.indexOf(id);
 
             if(index !== -1) {
                 this.ignoredUsers.splice(index, 1);
-                this.saveIgnoredUsers();
+                this.saveUserlist();
+                return true;
+            }
+            return false;
+        },
+        trackUser: function(id, name) {
+            var users = this.userlist,
+                length;
+
+            if(!id) {
+                return false;
+            } else if(!users.hasOwnProperty(id)) {
+                users[id] = {
+                    ignored: false,
+                    names: name ? [name] : []
+                }
+                this.saveUserlist();
+            } else if(name) {
+                lastIndex = users[id].names.length - 1;
+                if(lastIndex === -1 || users[id].names[lastIndex] !== name) {
+                    users[id].names.push(name);
+                    this.saveUserlist();
+                }
             }
         },
-        loadIgnoredUsers: function() {
-            var data = localStorage.getItem('jetstuff.chathelper.ignoredusers');
+        loadUserlist: function() {
+            var data = localStorage.getItem('jetstuff.chathelper.userlist');
 
             if(data) {
-                this.ignoredUsers = JSON.parse(data);
+                this.userlist = JSON.parse(data);
             }
         },
-        saveIgnoredUsers: function() {
-            localStorage.setItem('jetstuff.chathelper.ignoredusers', JSON.stringify(this.ignoredUsers));
+        saveUserlist: function() {
+            localStorage.setItem('jetstuff.chathelper.userlist', JSON.stringify(this.userlist));
         },
         rebindChathandler: function() {
             socketio.off("new_chatmsg");
@@ -58,12 +89,17 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var id = data["userid"];
             var name = data["username"];
             var msg = data["msg"];
+
+            if(id) {
+                this.trackUser(id, name);
+            }
+
             if (!msg) {
                 return;
             }
 
             // User ignored?
-            if(this.isIgnored(id)) {
+            if(id && !data["admin"] && this.isIgnored(id)) {
                 return;
             }
 
@@ -115,6 +151,24 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 $("#chatbox").animate({
                     "scrollTop": $('#chatbox')[0].scrollHeight
                 }, "slow");
+            }
+        },
+        cleanup: function() {
+            // Upgrade storage to latest version
+            var ignoredUsers = localStorage.getItem('jetstuff.chathelper.ignoredusers'),
+                id;
+
+            if(ignoredUsers) {
+                ignoredUsers = JSON.parse(ignoredUsers);
+                for(var i = 0; i < ignoredUsers.length; i++) {
+                    id = ignoredUsers[i];
+                    this.userlist[id] = {
+                        names: [],
+                        ignored: true
+                    }
+                }
+                this.saveUserlist();
+                localStorage.removeItem('jetstuff.chathelper.ignoredusers');
             }
         }
     });
