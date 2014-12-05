@@ -2,7 +2,7 @@
 // @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.0.1
+// @version     0.0.2
 // @grant       none
 // ==/UserScript==
 
@@ -31,7 +31,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.saveIgnoredUsers();
             }
         },
-        unignoreUser: function() {
+        unignoreUser: function(id) {
             var index = this.ignoredUsers.indexOf(id);
 
             if(index !== -1) {
