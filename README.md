@@ -20,7 +20,9 @@ A set of tools for the chat on diggit.io.
 
 There isn't much yet. It's WIP and version `0.0.3`, so the cool stuff has yet to come. Including a GUI. If you can't use a console, this is not for you yet.
 
-But you can ignore people. It's plain and simple: You ignore their ID, their messages get dropped. No hint whatsoever that they wrote something.
+~~But you can ignore people. It's plain and simple: You ignore their ID, their messages get dropped. No hint whatsoever that they wrote something.~~
+
+Changed to a soft ignore. Hard ignore will be back soon.
 
 How to do that (no GUI yet):
 
@@ -34,7 +36,7 @@ Unignoring is a thing, but who wants that?
 
     jetstuff.chatHelper.unignoreUser(id)
 
-I plan to implement a hard ignore (like this) and a soft ignore that displays the users name, but not the message. (Maybe on mouseover? Suggestions?)
+I plan to implement a hard ignore and a soft ignore that displays the users name, but not the message. (Maybe on mouseover? Suggestions?)
 
 ### Planned features
 

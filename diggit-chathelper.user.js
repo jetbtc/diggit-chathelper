@@ -41,11 +41,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         unignoreUser: function(id) {
-            var index = this.ignoredUsers.indexOf(id);
+            this.trackUser(id);
 
-            if(index !== -1) {
-                this.ignoredUsers.splice(index, 1);
-                this.saveUserlist();
+            if(this.userlist.hasOwnProperty(id)) {
+                this.userlist[id].ignored = false;
                 return true;
             }
             return false;
@@ -86,12 +85,17 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         chatHandler: function(data) {
             // This function is an extended version of the diggit.io source.
-            var id = data["userid"];
-            var name = data["username"];
-            var msg = data["msg"];
+            var id = data["userid"],
+                name = data["username"],
+                msg = data["msg"],
+                altNames = "";
+                ignored = false,
+                messageHead = "";
+                messageBody = "";
 
             if(id) {
                 this.trackUser(id, name);
+                altNames = this.userlist[id].names.length > 1 ? "Previous names: " + this.userlist[id].names.slice(0,-1).join(', ') : "";
             }
 
             if (!msg) {
@@ -100,7 +104,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             // User ignored?
             if(id && !data["admin"] && this.isIgnored(id)) {
-                return;
+                ignored = true;
             }
 
             var date = convertToLocalTime(new Date(data["date"]));
@@ -140,7 +144,17 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 }
             }
             msg = msg.join(" ");
-            $("#chatbox").append('' + '<div class="chatmsgcontainer">' + '    <div class="chatuser"><span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + '    <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>' + '</div>');
+
+            messageHead = '<div class="chatuser"><span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" '+(ignored ? 'style="color:#b57a5a"' : '')+' data-userid="' + id + '">' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '<span class="jetstuff-userid" style="font-size: 11px; margin-left: 4px; opacity: 0.5;cursor:'+(altNames ? 'pointer' : 'default')+';" title="'+altNames+'">'+(id || "")+'</span>' + '</div><div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>';
+            
+            if(ignored) {
+                messageBody = '<div style="clear:both"></div>';
+            } else {
+                messageBody = '<div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>';
+            }
+            
+
+            $("#chatbox").append('<div class="chatmsgcontainer'+  (ignored ? ' jetstuff-ignoredUser' : '') +'">' + messageHead + messageBody + '</div>');
             $("#chatbox").stop();
             if (!document.hasFocus()) {
                 chatmsgsblur++;
