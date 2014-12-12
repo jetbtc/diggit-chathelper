@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.1.0
+// @name        diggit-chathelper v{{version}}
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.1.0
+// @version     {{version}}
 // @grant       none
 // ==/UserScript==
 
 var jetstuff = jetstuff || {};
 (function() {
-    var styles = '';
+    var styles = '{{styles}}';
 
     function ChatHelper() {
         this.init();

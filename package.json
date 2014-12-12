@@ -1,0 +1,32 @@
+{
+  "name": "diggit-chathelper",
+  "version": "0.1.0",
+  "description": "Tools to improve on the diggit.io chat and related functionality.",
+  "main": "diggit-chathelper.user.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jetbtc/diggit-chathelper.git"
+  },
+  "keywords": [
+    "diggit.io",
+    "chathelper",
+    "ignore"
+  ],
+  "author": "jet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jetbtc/diggit-chathelper/issues"
+  },
+  "homepage": "https://github.com/jetbtc/diggit-chathelper",
+  "devDependencies": {
+    "del": "~1.1.0",
+    "gulp": "~3.8.10",
+    "gulp-replace": "~0.5.0",
+    "gulp-stylus": "~1.3.4",
+    "gulp-rename": "~1.2.0",
+    "through2": "~0.6.3"
+  }
+}
