@@ -9,6 +9,11 @@ A set of tools for the chat on diggit.io.
 - You need Firefox
 - Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon
 - Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
+- Refresh diggit
+
+How do I know it works?
+
+People will have their user IDs next to their names in the chat if the chathelper is running.
 
 ### Updating
 
@@ -18,50 +23,35 @@ A set of tools for the chat on diggit.io.
 
 ### Usage
 
-There isn't much yet. It's WIP and an early version, so the cool stuff has yet to come. Including a GUI. If you can't use a console, this is not for you yet.
+Alright. You can use commands to control this thing. Type them in the chatbox, as you probably know it from other places. They won't be sent unless you do it wrong. I'll add more commands as we go, but the most important functionality, ignoring, works just fine.
 
-~~But you can ignore people. It's plain and simple: You ignore their ID, their messages get dropped. No hint whatsoever that they wrote something.~~
+The following commands are available as of now:
 
-~~Changed to a soft ignore. Hard ignore will be back soon.~~
+- `!help` - Get a help message with a summary of the available commands.
+- `!ignore [id]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
+- `!drop [id]` - For the annoying spammers, you have this gem. Completely drop their messages from the chat!
+- `!unignore [id]` - Undo `!ignore` and `!drop`
 
-Both are now possible.
+Examples:
 
-#### Ignore
+- `!ignore 8760` - Ignore testificate, the guy I use to test stuff.
+- `!drop 8760` - Completely hide that stuff.
+- `!drop 1` - Yeah... no. Nice try.
+- `!unignore 2` - That would work.
 
-If you ignore people, new messages will only show their name and such, but not the message itself. You'll know they said something, but chat space is saved and you don't have to put up with the shit they said. If you want to, **you can hover over the name to see the message**.
-
-How to ignore:
-
-- Get the ID of the user you would rather punch in the face than ignore *(there is only so much I can help you with)* ~~by clicking on their name in the chat~~ it's displayed next to their name and you can copy/paste that
-- Open the console (`CTRL + Shift + K`)
-- Enter this: `jetstuff.chatHelper.ignoreUser(id)` and replace `id` with the users id, for example `jetstuff.chatHelper.ignoreUser(21861)`
-- Press `Enter`
-- Enjoy!
-
-Unignoring is a thing, but who wants that?
-
-    jetstuff.chatHelper.unignoreUser(id)
-
-#### Ignoring is not enough?
-
-People can be annoying. If that's the case, just drop their messages. No hint of them in chat. At all.
-
-How to do that:
-
-Same thing as above, but add this `1` as a second parameter:
-
-    jetstuff.chatHelper.ignoreUser(21861, 1)
-
-It's like hellbanning, but just for you.
-
-If you ever want to undo that, just unignore the user. Same as above. But of course you won't know their id, because you already forgot about those people. No loss, right?
 
 ### Planned features
 
-- Ignore users (Basics implemented. No GUI yet)
 - Highlight users
 - Filter ChatBot announcements
-- Keep track of IDs, names
 - Keep track of your tips
 - Maybe some kind of import/export functionality
+
+### Suggestions?
+
+Let me know in the chat. Implement them and make a pull request, if you want.
+
+### Donations
+
+Tip me all you have! You'll have to do it manually since I didn't get around to add that into this script just yet. JK. Tips are welcome, though!
 

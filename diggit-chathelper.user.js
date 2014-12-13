@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.1.2
+// @name        diggit-chathelper v0.2.0
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.1.2
+// @version     0.2.0
 // @grant       none
 // ==/UserScript==
 
@@ -21,9 +21,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
-        unignorable: [1],
+        unignorable: [0, 1],
         userlist: {},
-        commandRe: /^!(help|tip|ignore|hardignore|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|tip|ignore|drop|unignore|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
             this.cleanup();
@@ -42,6 +42,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
         },
         ignoreUser: function(id, hardignore) {
+            id = +id; // int please
             if(id && this.unignorable.indexOf(id) === -1) {
 
                 this.trackUser(id);
@@ -60,11 +61,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         unignoreUser: function(id) {
+            var users = this.userlist;
+
             this.trackUser(id);
 
-            if(this.userlist.hasOwnProperty(id)) {
-                this.userlist[id].ignored = false;
-                this.userlist[id].hardignored = false;
+            if(users.hasOwnProperty(id)) {
+                users[id].ignored = false;
+                users[id].hardignored = false;
 
                 this.saveUserlist();
                 return true;
@@ -90,6 +93,14 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     this.saveUserlist();
                 }
             }
+        },
+        getUsername: function(id) {
+            var users = this.userlist;
+
+            if(users.hasOwnProperty(id) && users[id].names) {
+                return users[id].names[users[id].names.length-1];
+            }
+            return null;
         },
         loadUserlist: function() {
             var data = localStorage.getItem('jetstuff.chathelper.userlist');
@@ -132,15 +143,59 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return false;
             }
 
-            if(command === 'help') {
-                showInfoMsg(helptext);
+            switch(command) {
+                case 'help':
+                    this.showInfoMsg(helptext);
+                    break;
+                case 'ignore':
+                    if( this.ignoreUser(args[0]) ) {
+                        var name = this.getUsername(args[0]);
+
+                        if(name) {
+                            this.showInfoMsg('Ignored '+name+' (#'+args[0]+')');
+                        } else {
+                            this.showInfoMsg('Ignored user #'+args[0]);
+                        }
+                    } else {
+                        this.showInfoMsg('No id given, or are you trying to ignore staffmembers?');
+                    }
+                    break;
+                case 'unignore':
+                    if( this.unignoreUser(args[0]) ) {
+                        var name = this.getUsername(args[0]);
+
+                        if(name) {
+                            this.showInfoMsg('Unignored '+name+' (#'+args[0]+')');
+                        } else {
+                            this.showInfoMsg('Unignored user #'+args[0]);
+                        }
+                    } else {
+                        this.showInfoMsg('No id given');
+                    }
+                    break;
+                case 'drop':
+                    if( this.ignoreUser(args[0], 1) ) {
+                        var name = this.getUsername(args[0]);
+
+                        if(name) {
+                            this.showInfoMsg('Dropped '+name+' (#'+args[0]+')');
+                        } else {
+                            this.showInfoMsg('Dropped user #'+args[0]);
+                        }
+                    } else {
+                        this.showInfoMsg('No id given, or are you trying to ignore staffmembers?');
+                    }
+                    break;
+                default:
+                    // Treat unrecognized commands as chat message
+                    return false;
             }
-            
             return true;
         },
         chatHandler: function(data) {
             // This function is an extended version of the diggit.io source.
-            var id = data["userid"],
+            var $chatbox = $("#chatbox"),
+                id = data["userid"],
                 name = data["username"],
                 msg = data["msg"],
                 altNames = "",
@@ -177,7 +232,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 minute = date.getMinutes(),
                 doScroll = true;
 
-            if($("#chatbox").scrollTop() + $("#chatbox").innerHeight() + 100 < $("#chatbox").get(0).scrollHeight) {
+            if($chatbox.scrollTop() + $chatbox.innerHeight() + 100 < $chatbox.get(0).scrollHeight) {
                 doScroll = false;
             }
             msg = msg.split(" ");
@@ -214,8 +269,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 }
             }
             msg = msg.join(" ");
-            $("#chatbox").append('' + '<div class="chatmsgcontainer '+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '    <div class="chatuser"><span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + '    <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>' + '</div>');
-            $("#chatbox").stop();
+            $chatbox.append('' + '<div class="chatmsgcontainer '+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '    <div class="chatuser"><span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + '    <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>' + '</div>');
+            $chatbox.stop();
             if(!document.hasFocus()) {
                 chatmsgsblur++;
                 var chatmsgstring = chatmsgsblur;
@@ -226,10 +281,18 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             update_chatPreview();
             if(doScroll) {
-                $("#chatbox").animate({
-                    "scrollTop": $('#chatbox')[0].scrollHeight
+                $chatbox.animate({
+                    "scrollTop": $chatbox[0].scrollHeight
                 }, "slow");
             }
+        },
+        showInfoMsg: function(msg) {
+            var $chatbox = $("#chatbox"),
+                html = '<div class="chatmsgcontainer"><div class="infomsg">' + msg + '</div></div>';
+
+            $chatbox.append(html).animate({
+                "scrollTop": $chatbox[0].scrollHeight
+            }, "slow");
         },
         cleanup: function() {
             // Upgrade storage to latest version
