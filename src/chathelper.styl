@@ -1,0 +1,33 @@
+.jetstuff-ignoreduser
+    position relative
+
+    .chatusertext
+    .chattime
+    .jetstuff-userid
+        color #b57a5a
+    .chatmsg
+        position absolute
+        top 100%
+        left 0
+        right 0
+        opacity 0.92
+        background-color #344c45
+        transform-origin 0 0
+        transform rotateX(-90deg)
+        transition transform .15s linear
+        z-index 2
+        
+    &:hover
+        .chatmsg
+            margin-bottom 0
+            transform rotateX(0)
+
+.jetstuff-userid
+    color #31c471
+    cursor default
+    font-size 11px
+    margin-left 4px
+    opacity 0.5
+
+.jetstuff-hasalts
+    cursor pointer
