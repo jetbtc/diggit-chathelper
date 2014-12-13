@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.2.1
+// @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
 // @version     0.2.1
