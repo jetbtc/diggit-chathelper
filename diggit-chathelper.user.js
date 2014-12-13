@@ -1,14 +1,20 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.1.1
+// @name        diggit-chathelper v0.1.2
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.1.1
+// @version     0.1.2
 // @grant       none
 // ==/UserScript==
 
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
-    var style = $('<style>').append('.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}').appendTo(document.head);
+    var style = $('<style>').append('.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}').appendTo(document.head),
+        helptext = 'Chathelper Help <dl class="jetstuff-help">'
+            + '<dt>!help</dt> <dd>show this message</dd>'
+            + '<dt>!ignore [id]</dt> <dd>ignore user</dd>'
+            + '<dt>!drop [id]</dt> <dd>drop messages of user</dd>'
+            + '<dt>!unignore [id]</dt> <dd>unignore user + no longer drop their messages</dd>'
+            + '</dl>';
 
     function ChatHelper() {
         this.init();
@@ -17,14 +23,17 @@ var jetstuff = window.jetstuff = jetstuff || {};
     $.extend(ChatHelper.prototype, {
         unignorable: [1],
         userlist: {},
+        commandRe: /^!(help|tip|ignore|hardignore|rain|rainyes)\s*(.*)?/,
+        argsplitRe: /\s+/,
         init: function() {
             this.cleanup();
 
             this.loadUserlist();
 
+            this.rebindChatsubmit();
             this.rebindChathandler();
 
-            console.log("Chathelper initialized", this.userlist);
+            console.info("chathelper active");
         },
         isIgnored: function(id) {
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
@@ -92,9 +101,42 @@ var jetstuff = window.jetstuff = jetstuff || {};
         saveUserlist: function() {
             localStorage.setItem('jetstuff.chathelper.userlist', JSON.stringify(this.userlist));
         },
+        rebindChatsubmit: function() {
+            $('#chatform').off('submit').on('submit', this.chatSubmitHandler.bind(this));
+        },
         rebindChathandler: function() {
             socketio.off("new_chatmsg");
             socketio.on("new_chatmsg", this.chatHandler.bind(this));
+        },
+        chatSubmitHandler: function(event) {
+            var $chatform = $(this),
+                $chattext = $("#chattext"),
+                msg = $chattext.val();
+
+            $chattext.val('');
+
+            if(!this.commandHandler(msg)) {
+                socketio.emit("chat", {
+                    msg: msg
+                });
+            }
+            
+            return false;
+        },
+        commandHandler: function(msg) {
+            var match = msg.match(this.commandRe) || [],
+                command = match[1] ? match[1] : null,
+                args = match[2] ? match[2].split(this.argsplitReg) : [];
+
+            if(!command) {
+                return false;
+            }
+
+            if(command === 'help') {
+                showInfoMsg(helptext);
+            }
+            
+            return true;
         },
         chatHandler: function(data) {
             // This function is an extended version of the diggit.io source.
