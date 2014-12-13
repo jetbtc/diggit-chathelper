@@ -1,29 +1,38 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.2.0
+// @name        diggit-chathelper v0.2.1
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.2.0
+// @version     0.2.1
 // @grant       none
 // ==/UserScript==
 
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
-    var style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}').appendTo(document.head),
+    var style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;vertical-align:text-bottom;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
-            + '<dt>!help</dt> <dd>show this message</dd>'
-            + '<dt>!ignore [id]</dt> <dd>ignore user</dd>'
-            + '<dt>!drop [id]</dt> <dd>drop messages of user</dd>'
-            + '<dt>!unignore [id]</dt> <dd>unignore user + no longer drop their messages</dd>'
-            + '</dl>';
+                + '<dt>!help</dt> <dd>Get this message</dd>'
+                + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
+                + '<dt>!ignore</dt> <dd>Get a list of ignored users</dd>'
+                + '<dt>!ignore on/off</dt> <dd>toggle ignoring on/off</dd>'
+                + '<dt>!ignore [id]</dt> <dd>Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.</dd>'
+                + '<dt>!drop</dt> <dd>get a list of dropped users</dd>'
+                + '<dt>!drop on/off</dt> <dd>toggle dropping of messages on/off</dd>'
+                + '<dt>!drop [id]</dt> <dd>For the annoying spammers, you have this gem. Completely drop their messages from the chat!</dd>'
+                + '<dt>!unignore [id]</dt> <dd>Undo !ignore and !drop</dd>'
+                + '<dt>!undrop [id]</dt> <dd>Alias of !unignore</dd>'
+            + '</dl><div class="jetstuff-credits">More info on <a href="https://github.com/jetbtc/diggit-chathelper" target="_blank">github</a><br> Created by jet (#1761)</div>';
 
     function ChatHelper() {
         this.init();
     }
 
     $.extend(ChatHelper.prototype, {
+        version: '0.2.1',
+        chatIgnore: true,
+        chatDrop: true,
         unignorable: [0, 1],
         userlist: {},
-        commandRe: /^!(help|tip|ignore|drop|unignore|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|tip|ignore|drop|unignore|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
             this.cleanup();
@@ -42,7 +51,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
         },
         ignoreUser: function(id, hardignore) {
-            id = +id; // int please
+            var users = this.userlist;
+
             if(id && this.unignorable.indexOf(id) === -1) {
 
                 this.trackUser(id);
@@ -50,9 +60,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.unignoreUser(id);
 
                 if(hardignore) {
-                    this.userlist[id].hardignored = true;
+                    users[id].hardignored = true;
                 } else {
-                    this.userlist[id].ignored = true;
+                    users[id].ignored = true;
                 }
 
                 this.saveUserlist();
@@ -66,8 +76,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             this.trackUser(id);
 
             if(users.hasOwnProperty(id)) {
-                users[id].ignored = false;
                 users[id].hardignored = false;
+                users[id].ignored = false;
 
                 this.saveUserlist();
                 return true;
@@ -101,6 +111,25 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return users[id].names[users[id].names.length-1];
             }
             return null;
+        },
+        getIgnoredUsers: function(hardignore) {
+            var users = this.userlist,
+                ignoredUsers = [],
+                user, k;
+
+            for(k in this.userlist) {
+                user = users[k];
+
+                if( (!hardignore && user.ignored) || (hardignore && user.hardignored) ) {
+                    ignoredUsers.push(+k);
+                }
+            }
+
+            ignoredUsers.sort(function(a, b) {
+                return b < a;
+            });
+
+            return ignoredUsers;
         },
         loadUserlist: function() {
             var data = localStorage.getItem('jetstuff.chathelper.userlist');
@@ -137,7 +166,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
-                args = match[2] ? match[2].split(this.argsplitReg) : [];
+                args = match[2] ? match[2].split(this.argsplitReg) : [],
+                id, html, name, ignoredUsers;
 
             if(!command) {
                 return false;
@@ -148,43 +178,67 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     this.showInfoMsg(helptext);
                     break;
                 case 'ignore':
-                    if( this.ignoreUser(args[0]) ) {
-                        var name = this.getUsername(args[0]);
+                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+
+                    if(typeof args[0] === "undefined") {
+                        this.listIgnoredUsers(false);
+                    } else if(args[0] === 'on') {
+                        this.showInfoMsg('Ignoring enabled. Use `!ignore off` to disable it again');
+                        this.chatIgnore = true;
+                    } else if(args[0] === 'off') {
+                        this.showInfoMsg('Ignoring disabled. Use `!ignore on` to enable it again');
+                        this.chatIgnore = false;
+                    } else if( this.ignoreUser(id) ) {
+                        var name = this.getUsername(id);
 
                         if(name) {
-                            this.showInfoMsg('Ignored '+name+' (#'+args[0]+')');
+                            this.showInfoMsg('Ignored '+name+' (#'+id+')');
                         } else {
-                            this.showInfoMsg('Ignored user #'+args[0]);
+                            this.showInfoMsg('Ignored user #'+id);
                         }
                     } else {
-                        this.showInfoMsg('No id given, or are you trying to ignore staffmembers?');
+                        this.showInfoMsg('Are you trying to ignore staffmembers?');
+                    }
+                    break;
+                case 'drop':
+                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+                    if(typeof args[0] === "undefined") {
+                        this.listIgnoredUsers(true);
+                    } else if(args[0] === 'on') {
+                        this.showInfoMsg('Dropping enabled. Use `!drop off` to disable it again');
+                        this.chatDrop = true;
+                    } else if(args[0] === 'off') {
+                        this.showInfoMsg('Dropping disabled. Use `!drop on` to enable it again');
+                        this.chatDrop = false;
+                    } else if( this.ignoreUser(id, 1) ) {
+                        var name = this.getUsername(id);
+
+                        if(name) {
+                            this.showInfoMsg('Dropped '+name+' (#'+id+')');
+                        } else {
+                            this.showInfoMsg('Dropped user #'+id);
+                        }
+                    } else {
+                        this.showInfoMsg('Are you trying to ignore staffmembers?');
                     }
                     break;
                 case 'unignore':
-                    if( this.unignoreUser(args[0]) ) {
-                        var name = this.getUsername(args[0]);
+                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+                    if( this.unignoreUser(id) ) {
+                        var name = this.getUsername(id);
 
                         if(name) {
-                            this.showInfoMsg('Unignored '+name+' (#'+args[0]+')');
+                            this.showInfoMsg('Unignored '+name+' (#'+id+')');
                         } else {
-                            this.showInfoMsg('Unignored user #'+args[0]);
+                            this.showInfoMsg('Unignored user #'+id);
                         }
                     } else {
                         this.showInfoMsg('No id given');
                     }
                     break;
-                case 'drop':
-                    if( this.ignoreUser(args[0], 1) ) {
-                        var name = this.getUsername(args[0]);
-
-                        if(name) {
-                            this.showInfoMsg('Dropped '+name+' (#'+args[0]+')');
-                        } else {
-                            this.showInfoMsg('Dropped user #'+args[0]);
-                        }
-                    } else {
-                        this.showInfoMsg('No id given, or are you trying to ignore staffmembers?');
-                    }
+                case 'version':
+                case 'v':
+                    this.showInfoMsg('chathelper v'+this.version);
                     break;
                 default:
                     // Treat unrecognized commands as chat message
@@ -216,11 +270,11 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
 
             // User ignored?
-            if(id && !data["admin"] && this.isIgnored(id)) {
+            if(id && !data["admin"] && this.isIgnored(id) && this.chatIgnore) {
                 ignored = true;
             }
             // Fuck that guy?
-            if(id && !data["admin"] && this.isHardignored(id)) {
+            if(id && !data["admin"] && this.isHardignored(id) && this.chatDrop) {
                 return;
             }
 
@@ -293,6 +347,28 @@ var jetstuff = window.jetstuff = jetstuff || {};
             $chatbox.append(html).animate({
                 "scrollTop": $chatbox[0].scrollHeight
             }, "slow");
+        },
+        listIgnoredUsers: function(hardignore) {
+            var ignoredUsers = this.getIgnoredUsers(hardignore),
+                id, name, html;
+
+            html = (hardignore) ? "Dropped users:" : "Ignored users:";
+
+            if(ignoredUsers) {
+                html += '<ul class="jetstuff-userlist">';
+                for(var i=0; i<ignoredUsers.length; i++) {
+                    id = ignoredUsers[i];
+                    name = this.getUsername(id);
+                    html += '<li>#'+id+(name ? ' - '+name : '')+'</li>';
+                }
+                html += '</ul><div class="jetstuff-summary">Total: '+ignoredUsers.length+'</div>';
+            } else {
+                html = "No ignored users yet. Use `!ignore [id]` to ignore annoying users";
+            }
+            this.showInfoMsg(html);
+        },
+        listDroppedUsers: function() {
+
         },
         cleanup: function() {
             // Upgrade storage to latest version
