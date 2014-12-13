@@ -11,9 +11,7 @@ A set of tools for the chat on diggit.io.
 - Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
 - Refresh diggit
 
-How do I know it works?
-
-People will have their user IDs next to their names in the chat if the chathelper is running.
+**Info:** Peoples user ID will show up next to their names in chat. That's how you can tell it worked.
 
 ### Updating
 
@@ -23,7 +21,7 @@ People will have their user IDs next to their names in the chat if the chathelpe
 
 ### Usage
 
-Alright. You can use commands to control this thing. Type them in the chatbox, as you probably know it from other places. They won't be sent unless you do it wrong. I'll add more commands as we go, but the most important functionality, ignoring, works just fine.
+Alright. You can use commands with a leading explamation mark `!` to control this thing. Type them in the chatbox, as you probably know it from other places. They won't be sent unless you do it wrong. I'll add more commands as we go, but the most important functionality, ignoring, works just fine.
 
 The following commands are available as of now:
 
@@ -53,5 +51,6 @@ Let me know in the chat. Implement them and make a pull request, if you want.
 
 ### Donations
 
-Tip me all you have! You'll have to do it manually since I didn't get around to add that into this script just yet. JK. Tips are welcome, though!
+Tip me all you have! You'll have to do it manually since I didn't get around to add that to this script just yet. JK. Tips are welcome, though!
 
+*(I'm jet, my ID on the site is `1761`. Totally forgot about that..)*
