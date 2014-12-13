@@ -6,7 +6,7 @@
 // @grant       none
 // ==/UserScript==
 
-var jetstuff = jetstuff || {};
+var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
     var style = $('<style>').append('{{styles}}').appendTo(document.head);
 
@@ -15,6 +15,7 @@ var jetstuff = jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
+        unignorable: [1],
         userlist: {},
         init: function() {
             this.cleanup();
@@ -28,15 +29,23 @@ var jetstuff = jetstuff || {};
         isIgnored: function(id) {
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
         },
-        ignoreUser: function(id) {
-            if(id !== 1 && !this.isIgnored(id)) {
+        isHardignored: function(id) {
+            return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
+        },
+        ignoreUser: function(id, hardignore) {
+            if(id && this.unignorable.indexOf(id) === -1) {
 
                 this.trackUser(id);
 
-                this.userlist[id].ignored = true;
+                this.unignoreUser(id);
+
+                if(hardignore) {
+                    this.userlist[id].hardignored = true;
+                } else {
+                    this.userlist[id].ignored = true;
+                }
 
                 this.saveUserlist();
-
                 return true;
             }
             return false;
@@ -46,6 +55,9 @@ var jetstuff = jetstuff || {};
 
             if(this.userlist.hasOwnProperty(id)) {
                 this.userlist[id].ignored = false;
+                this.userlist[id].hardignored = false;
+
+                this.saveUserlist();
                 return true;
             }
             return false;
@@ -109,6 +121,10 @@ var jetstuff = jetstuff || {};
             // User ignored?
             if(id && !data["admin"] && this.isIgnored(id)) {
                 ignored = true;
+            }
+            // Fuck that guy?
+            if(id && !data["admin"] && this.isHardignored(id)) {
+                return;
             }
 
             msg = msg.replace(/["']/g, "");

@@ -1,20 +1,21 @@
 // ==UserScript==
-// @name        diggit-chathelper v0.1.0
+// @name        diggit-chathelper v0.1.1
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.1.0
+// @version     0.1.1
 // @grant       none
 // ==/UserScript==
 
-var jetstuff = jetstuff || {};
+var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
-    var style = $('<style>').append('.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}').appendTo(document.head);
+    var style = $('<style>').append('.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}').appendTo(document.head);
 
     function ChatHelper() {
         this.init();
     }
 
     $.extend(ChatHelper.prototype, {
+        unignorable: [1],
         userlist: {},
         init: function() {
             this.cleanup();
@@ -28,15 +29,23 @@ var jetstuff = jetstuff || {};
         isIgnored: function(id) {
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
         },
-        ignoreUser: function(id) {
-            if(id !== 1 && !this.isIgnored(id)) {
+        isHardignored: function(id) {
+            return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
+        },
+        ignoreUser: function(id, hardignore) {
+            if(id && this.unignorable.indexOf(id) === -1) {
 
                 this.trackUser(id);
 
-                this.userlist[id].ignored = true;
+                this.unignoreUser(id);
+
+                if(hardignore) {
+                    this.userlist[id].hardignored = true;
+                } else {
+                    this.userlist[id].ignored = true;
+                }
 
                 this.saveUserlist();
-
                 return true;
             }
             return false;
@@ -46,6 +55,9 @@ var jetstuff = jetstuff || {};
 
             if(this.userlist.hasOwnProperty(id)) {
                 this.userlist[id].ignored = false;
+                this.userlist[id].hardignored = false;
+
+                this.saveUserlist();
                 return true;
             }
             return false;
@@ -109,6 +121,10 @@ var jetstuff = jetstuff || {};
             // User ignored?
             if(id && !data["admin"] && this.isIgnored(id)) {
                 ignored = true;
+            }
+            // Fuck that guy?
+            if(id && !data["admin"] && this.isHardignored(id)) {
+                return;
             }
 
             msg = msg.replace(/["']/g, "");
