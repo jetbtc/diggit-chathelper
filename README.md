@@ -20,7 +20,7 @@ A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
 ### Usage
 
-Alright. You can use commands with a leading explamation mark `!` to control this thing. Type them in the chatbox, as you probably know it from other places. They won't be sent unless you do it wrong. I'll add more commands as we go, but the most important functionality, ignoring, works just fine.
+Alright. You can use commands with a leading exclamation mark `!` to control this thing. Type them in the chatbox, as you probably know it from other places. They won't be sent unless you do it wrong. I'll add more commands as we go, but the most important functionality, ignoring, works just fine.
 
 The following commands are available as of now:
 
