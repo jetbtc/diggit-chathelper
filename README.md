@@ -1,4 +1,4 @@
-# diggit-chathelper v0.3.0
+# diggit-chathelper v0.3.1
 
 A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
@@ -49,6 +49,9 @@ Examples:
 - `!ignore on` - And to get it back.. same works for `!drop`
 
 ### Changelog
+
+#### v0.3.1
+- Ignore didn't fully work after trophy update. Works now!
 
 #### v0.3.0
 - Support newly added trophies
