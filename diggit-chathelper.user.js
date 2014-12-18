@@ -32,7 +32,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         chatDrop: true,
         unignorable: [0, 1],
         userlist: {},
-        commandRe: /^!(help|version|v|tip|ignore|drop|unignore|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|tip|ignore|drop|unignore|undrop|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
             this.cleanup();
@@ -223,6 +223,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     }
                     break;
                 case 'unignore':
+                case 'undrop':
                     id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
                     if( this.unignoreUser(id) ) {
                         var name = this.getUsername(id);
