@@ -7,8 +7,10 @@ A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 - Make sure you actually want to install this. **Do NOT trust strangers with your Bitcoins. Ever.**
 - You need Firefox
 - Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon
+- **Important:** Disable your current version of the chathelper! Go to diggit, click the arrow next to the Greasemonkey icon and uncheck `diggit-chathelper v0.2.1`
 - Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
 - Refresh diggit
+- Done!
 
 **Info:** Peoples user ID will show up next to their names in chat. That's how you can tell it worked.
 
@@ -47,6 +49,11 @@ Examples:
 - `!ignore on` - And to get it back.. same works for `!drop`
 
 ### Changelog
+
+#### v0.3.0
+- Support newly added trophies
+- Can't ignore yourself anymore
+- Small CSS adjustment
 
 #### v0.2.1
 - Added my credentials to `!help` to prevent confusion
