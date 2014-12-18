@@ -291,6 +291,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             msg = msg.split(" ");
 
+
             for(var i = 0; i < msg.length; i++) {
                 msg[i] = msg[i].replace(/["']/g, '');
                 var firsttwo = msg[i].substring(0, 2);
@@ -314,8 +315,16 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     }
                 } else if(msg[i].length >= 26 && msg[i].length <= 34 && (msg[i].substring(0, 1) == "1" || msg[i].substring(0, 1) == "3")) {
                     msg[i] = '<span style="color:lightgreen" class="hoverlink" onclick="window.open(\'https://blockchain.info/address/' + msg[i] + '\', \'_blank\');">' + msg[i] + '</span>';
-                } else if(!id && msg[i] == "%BTC") {
+                } else if(!id && msg[i] == "%BTC" && data["amount"]) {
                     msg[i] = tobtc(data["amount"]);
+                } else if(!id && msg[i] == "%TROPHY" && data["trophy"]) {
+                    var trophyid = data["trophy"]["id"];
+                    var trophytier = data["trophy"]["tier"];
+                    var trophyuserid = data["trophy"]["userid"];
+                    var trophy = trophies[trophyid];
+                    if(trophy) {
+                        msg[i] = trophy.getIcon(trophytier, trophyuserid) + ' (<span style="color:' + trophy.getColor(trophytier) + '">' + trophy.getTierName(trophytier) + '</span> ' + trophy.getName() + ')';
+                    }
                 } else if(isURL(msg[i]) && msg[i].indexOf("'") === -1) {
                     lastUrlID++;
                     msg[i] = encodeURI(msg[i]);
@@ -323,7 +332,15 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 }
             }
             msg = msg.join(" ");
-            $chatbox.append('' + '<div class="chatmsgcontainer '+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '    <div class="chatuser"><span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + '    <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>' + '</div>');
+
+            var trophyString = "";
+            if(data["atrophy"]) {
+                trophyString = '<span>' + trophies[data["atrophy"]["id"]].getIcon(data["atrophy"]["tier"], id) + '</span> ';
+            }
+
+            console.log(data["atrophy"], trophyString);
+
+            $chatbox.append('' + '<div class="chatmsgcontainer'+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '    <div class="chatuser">' + trophyString + '<span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + '' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + '    <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div>' + '</div>');
             $chatbox.stop();
             if(!document.hasFocus()) {
                 chatmsgsblur++;
@@ -335,8 +352,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             update_chatPreview();
             if(doScroll) {
-                $chatbox.animate({
-                    "scrollTop": $chatbox[0].scrollHeight
+                $("#chatbox").animate({
+                    "scrollTop": $('#chatbox')[0].scrollHeight
                 }, "slow");
             }
         },
