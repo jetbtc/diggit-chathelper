@@ -53,7 +53,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         ignoreUser: function(id, hardignore) {
             var users = this.userlist;
 
-            if(id && this.unignorable.indexOf(id) === -1) {
+            if(id && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
 
                 this.trackUser(id);
 
@@ -197,7 +197,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                             this.showInfoMsg('Ignored user #'+id);
                         }
                     } else {
-                        this.showInfoMsg('Are you trying to ignore staffmembers?');
+                        this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
                     }
                     break;
                 case 'drop':
@@ -219,7 +219,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                             this.showInfoMsg('Dropped user #'+id);
                         }
                     } else {
-                        this.showInfoMsg('Are you trying to ignore staffmembers?');
+                        this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
                     }
                     break;
                 case 'unignore':
@@ -337,8 +337,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(data["atrophy"]) {
                 trophyString = '<span>' + trophies[data["atrophy"]["id"]].getIcon(data["atrophy"]["tier"], id) + '</span> ';
             }
-
-            console.log(data["atrophy"], trophyString);
 
             $chatbox.append('' + '<div class="chatmsgcontainer'+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '<div class="chatuser">' + trophyString + '<span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + '' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + '<div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div></div>');
             $chatbox.stop();
