@@ -58,18 +58,16 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
         },
         ignoreUser: function(id, hardignore) {
-            var users = this.userlist;
+            var user = this.trackUser(id);
 
-            if(id && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
-
-                this.trackUser(id);
+            if(user && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
 
                 this.unignoreUser(id);
 
                 if(hardignore) {
-                    users[id].hardignored = true;
+                    user.hardignored = true;
                 } else {
-                    users[id].ignored = true;
+                    user.ignored = true;
                 }
 
                 this.saveUserlist();
@@ -78,13 +76,11 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         unignoreUser: function(id) {
-            var users = this.userlist;
+            var user = this.trackUser(id);
 
-            this.trackUser(id);
-
-            if(users.hasOwnProperty(id)) {
-                users[id].hardignored = false;
-                users[id].ignored = false;
+            if(user) {
+                user.hardignored = false;
+                user.ignored = false;
 
                 this.saveUserlist();
                 return true;
@@ -136,30 +132,38 @@ var jetstuff = window.jetstuff = jetstuff || {};
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
         trackUser: function(id, name) {
-            var users = this.userlist,
-                length;
+            var user = null,
+                users = this.userlist,
+                length, lastIndex;
 
             if(!id) {
-                return false;
-            } else if(!users.hasOwnProperty(id)) {
-                users[id] = {
+                return null;
+            }
+
+            if(users.hasOwnProperty(id)) {
+                user = users[id];
+
+                if(name) {
+                    lastIndex = user.names.length - 1;
+                    if(lastIndex === -1 || user.names[lastIndex] !== name) {
+                        user.names.push(name);
+                        this.saveUserlist();
+                    }
+                }
+            } else {
+                user = users[id] = {
                     ignored: false,
                     names: name ? [name] : []
                 };
                 this.saveUserlist();
-            } else if(name) {
-                lastIndex = users[id].names.length - 1;
-                if(lastIndex === -1 || users[id].names[lastIndex] !== name) {
-                    users[id].names.push(name);
-                    this.saveUserlist();
-                }
             }
+            return user;
         },
         getUsername: function(id) {
-            var users = this.userlist;
+            var user = this.trackUser(id);
 
-            if(users.hasOwnProperty(id) && users[id].names) {
-                return users[id].names[users[id].names.length-1];
+            if(user && user.names) {
+                return user.names[user.names.length-1];
             }
             return null;
         },
@@ -304,13 +308,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 id = data["userid"],
                 name = data["username"],
                 msg = data["msg"],
+                user = this.trackUser(id, name),
                 altNames = "",
                 ignored = false,
                 idString;
 
             if(id) {
-                this.trackUser(id, name);
-                altNames = this.userlist[id].names.length > 1 ? "Previous names: " + this.userlist[id].names.slice(0,-1).join(', ') : "";
+                altNames = user.names.length > 1 ? "Previous names: " + this.userlist[id].names.slice(0,-1).join(', ') : "";
             }
 
             idString = altNames
