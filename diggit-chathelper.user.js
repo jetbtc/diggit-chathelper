@@ -8,7 +8,8 @@
 
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
-    var style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
+    var demoObj = document.createElement('a'),
+        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -32,6 +33,12 @@ var jetstuff = window.jetstuff = jetstuff || {};
         chatDrop: true,
         unignorable: [0, 1],
         userlist: {},
+        labels: {
+            "default": {
+                width: 3,
+                color: '#31c471'
+            }
+        },
         commandRe: /^!(help|version|v|tip|ignore|drop|unignore|undrop|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
@@ -83,6 +90,50 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return true;
             }
             return false;
+        },
+        setLabel: function(name, width, color) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+
+            // Valid number between 1 and 6, default 3
+            width = Math.min(6, Math.max(1, parseInt(width)||3));
+
+            // Make sure the color is valid
+            demoObj.style.color = "";
+            demoObj.style.color = color;
+            color = demoObj.style.color || '#31c471';
+
+            this.labels[name] = {
+                width: width,
+                color: color
+            };
+
+            console.log(this.labels[name]);
+
+            return name;
+        },
+        getLabel: function(name) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+
+            return this.labels[name] || this.labels["default"];
+        },
+        deleteLabel: function(name, width, color) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+            
+            if(name !== "default" && this.labels[name]) {
+                delete this.labels[name];
+                return true;
+            }
+            return false;
+        },
+        loadLabels: function() {
+            var data = localStorage.getItem('jetstuff.chathelper.labels');
+
+            if(data) {
+                this.labels = JSON.parse(data);
+            }
+        },
+        saveLabels: function() {
+            localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
         trackUser: function(id, name) {
             var users = this.userlist,

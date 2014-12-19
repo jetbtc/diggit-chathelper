@@ -8,7 +8,8 @@
 
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
-    var style = $('<style>').append('{{styles}}').appendTo(document.head),
+    var demoObj = document.createElement('a'),
+        style = $('<style>').append('{{styles}}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -32,6 +33,12 @@ var jetstuff = window.jetstuff = jetstuff || {};
         chatDrop: true,
         unignorable: [0, 1],
         userlist: {},
+        labels: {
+            "default": {
+                width: 3,
+                color: '#31c471'
+            }
+        },
         commandRe: /^!(help|version|v|tip|ignore|drop|unignore|undrop|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
@@ -83,6 +90,50 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return true;
             }
             return false;
+        },
+        setLabel: function(name, width, color) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+
+            // Valid number between 1 and 6, default 3
+            width = Math.min(6, Math.max(1, parseInt(width)||3));
+
+            // Make sure the color is valid
+            demoObj.style.color = "";
+            demoObj.style.color = color;
+            color = demoObj.style.color || '#31c471';
+
+            this.labels[name] = {
+                width: width,
+                color: color
+            };
+
+            console.log(this.labels[name]);
+
+            return name;
+        },
+        getLabel: function(name) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+
+            return this.labels[name] || this.labels["default"];
+        },
+        deleteLabel: function(name, width, color) {
+            name = name.replace(/[^a-z0-9\-]/gi, "");
+            
+            if(name !== "default" && this.labels[name]) {
+                delete this.labels[name];
+                return true;
+            }
+            return false;
+        },
+        loadLabels: function() {
+            var data = localStorage.getItem('jetstuff.chathelper.labels');
+
+            if(data) {
+                this.labels = JSON.parse(data);
+            }
+        },
+        saveLabels: function() {
+            localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
         trackUser: function(id, name) {
             var users = this.userlist,
