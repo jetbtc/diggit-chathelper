@@ -39,8 +39,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|label|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
+        labelFilterRe: /[^a-z0-9\-]/gi,
         init: function() {
             this.cleanup();
 
@@ -58,7 +59,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
         },
         ignoreUser: function(id, hardignore) {
-            var user = this.trackUser(id);
+            var user = this.getUserById(id);
 
             if(user && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
 
@@ -76,11 +77,11 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         unignoreUser: function(id) {
-            var user = this.trackUser(id);
+            var user = this.getUserById(id);
 
             if(user) {
-                user.hardignored = false;
-                user.ignored = false;
+                delete user["hardignored"];
+                delete user["ignored"];
 
                 this.saveUserlist();
                 return true;
@@ -88,36 +89,44 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         setLabel: function(name, color, width) {
-            name = name.replace(/[^a-z0-9\-]/gi, "");
+            var name = name ? name.replace(this.labelFilterRe, "") : "";
 
-            // Valid number between 1 and 6, default 3
-            width = Math.min(6, Math.max(1, parseInt(width)||3));
+            if(name.length) {
+                // Valid number between 1 and 6, default 3
+                width = Math.min(6, Math.max(1, parseInt(width)||3));
 
-            // Make sure the color is valid
-            demoObj.style.color = "";
-            demoObj.style.color = color;
-            color = demoObj.style.color || '#31c471';
+                // Make sure the color is valid
+                demoObj.style.color = "";
+                demoObj.style.color = color;
+                color = demoObj.style.color || '#31c471';
 
-            this.labels[name] = {
-                width: width,
-                color: color
-            };
+                this.labels[name] = {
+                    width: width,
+                    color: color
+                };
 
-            return name;
+                this.saveLabels();
+
+                return name;                
+            }
+            return null;
         },
         getLabel: function(name) {
-            name = name.replace(/[^a-z0-9\-]/gi, "");
+            var name = name ? name.replace(this.labelFilterRe, "") : "";
 
-            return this.labels[name] || this.labels["default"];
+            return name.length ? this.labels[name] || null : null;
         },
         deleteLabel: function(name, width, color) {
-            name = name.replace(/[^a-z0-9\-]/gi, "");
+            var name = name ? name.replace(this.labelFilterRe, "") : "";
 
-            if(name !== "default" && this.labels[name]) {
+            if(name.length && name !== "default" && this.labels[name]) {
                 delete this.labels[name];
-                return true;
+
+                this.saveLabels();
+                
+                return name;
             }
-            return false;
+            return null;
         },
         loadLabels: function() {
             var data = localStorage.getItem('jetstuff.chathelper.labels');
@@ -130,19 +139,21 @@ var jetstuff = window.jetstuff = jetstuff || {};
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
         labelUser: function(id, labelName) {
-            var user = this.trackUser(id),
-                labelName = labelName ? labelName.replace(/[^a-z0-9\-]/gi, "") : false;
+            var user = this.getUserById(id),
+                labelName = labelName ? labelName.replace(this.labelFilterRe, "") : false;
+
+            console.log(id, user);
 
             if(user && labelName) {
                 user.label = labelName;
                 this.saveUserlist();
 
-                return true;
+                return labelName;
             }
             return false;
         },
         unlabelUser: function(id) {
-            var user = this.trackUser(id);
+            var user = this.getUserById(id);
 
             if(user && user.label) {
                 delete user.label;
@@ -152,9 +163,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return false;
         },
-        trackUser: function(id, name) {
-            var user = null,
+        getUserById: function(id) {
+            var id = parseInt(id) || 0,
                 users = this.userlist,
+                user = null,
                 length, lastIndex;
 
             if(!id) {
@@ -163,14 +175,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             if(users.hasOwnProperty(id)) {
                 user = users[id];
-
-                if(name) {
-                    lastIndex = user.names.length - 1;
-                    if(lastIndex === -1 || user.names[lastIndex] !== name) {
-                        user.names.push(name);
-                        this.saveUserlist();
-                    }
-                }
             } else {
                 user = users[id] = {
                     ignored: false,
@@ -180,13 +184,32 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return user;
         },
+        setUsername: function(id, name) {
+            var user = this.getUserById(id),
+                lastIndex = user ? user.names.length - 1 : false;
+
+            if(name && lastIndex !== false && (lastIndex === -1 || user.names[lastIndex] !== name)) {
+                user.names.push(name);
+                this.saveUserlist();
+            }
+        },
         getUsername: function(id) {
-            var user = this.trackUser(id);
+            var user = this.getUserById(id);
 
             if(user && user.names) {
                 return user.names[user.names.length-1];
             }
             return null;
+        },
+        getUserString: function(id) {
+            var user = this.getUserById(id);
+
+            if(user && user.names) {
+                return user.names[user.names.length-1]+' (#'+id+')';
+            } else {
+                return 'user #'+id;
+            }
+            
         },
         getIgnoredUsers: function(hardignore) {
             var users = this.userlist,
@@ -240,7 +263,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         cmdIgnore: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+                name;
 
             if(typeof args[0] === "undefined") {
                 this.listIgnoredUsers(false);
@@ -251,19 +275,16 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.showInfoMsg('Ignoring disabled. Use `!ignore on` to enable it again');
                 this.chatIgnore = false;
             } else if( this.ignoreUser(id) ) {
-                var name = this.getUsername(id);
+                name = this.getUserString(id);
 
-                if(name) {
-                    this.showInfoMsg('Ignored '+name+' (#'+id+')');
-                } else {
-                    this.showInfoMsg('Ignored user #'+id);
-                }
+                this.showInfoMsg('Ignored '+name);
             } else {
                 this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
             }
         },
         cmdDrop: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+                name;
 
             if(typeof args[0] === "undefined") {
                 this.listIgnoredUsers(true);
@@ -274,27 +295,21 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.showInfoMsg('Dropping disabled. Use `!drop on` to enable it again');
                 this.chatDrop = false;
             } else if( this.ignoreUser(id, 1) ) {
-                var name = this.getUsername(id);
+                name = this.getUserString(id);
 
-                if(name) {
-                    this.showInfoMsg('Dropped '+name+' (#'+id+')');
-                } else {
-                    this.showInfoMsg('Dropped user #'+id);
-                }
+                this.showInfoMsg('Dropped '+name);
             } else {
                 this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
             }
         },
         cmdUnignore: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
-            if( this.unignoreUser(id) ) {
-                var name = this.getUsername(id);
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+                name;
 
-                if(name) {
-                    this.showInfoMsg('Unignored '+name+' (#'+id+')');
-                } else {
-                    this.showInfoMsg('Unignored user #'+id);
-                }
+            if( this.unignoreUser(id) ) {
+                name = this.getUserString(id);
+
+                this.showInfoMsg('Unignored '+name);
             } else {
                 this.showInfoMsg('No id given');
             }
@@ -318,7 +333,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 labelName = this.deleteLabel(name);
 
             if(labelName) {
-                this.showInfoMsg('Removed label '+labelName+' from all users.');
+                this.showInfoMsg('Removed label '+labelName+'.');
             } else {
                 this.showInfoMsg('Could not remove label. Did you pass a valid label name?');
             }
@@ -327,7 +342,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
                 name = args[1] || "default",
                 labelName = this.labelUser(id, name),
-                username = this.getUsername(id);
+                username = this.getUserString(id);
+
+            console.log("labelName", labelName);
 
             if(labelName) {
                 this.showInfoMsg(username+' was labelled as '+labelName+'!');
@@ -337,7 +354,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         cmdUnlabel: function(args) {
             var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
-                username = this.getUsername(id);
+                username = this.getUserString(id);
 
             if(this.unlabelUser(id)) {
                 this.showInfoMsg('Removed label from '+username+'!');
@@ -348,8 +365,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
-                args = match[2] ? match[2].split(this.argsplitRe) : [],
-                id, html, name, ignoredUsers;
+                args = match[2] ? match[2].split(this.argsplitRe) : [];
 
             if(!command) {
                 return false;
@@ -401,12 +417,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 id = data["userid"],
                 name = data["username"],
                 msg = data["msg"],
-                user = this.trackUser(id, name),
+                user = this.getUserById(id),
                 altNames = "",
                 ignored = false,
                 idString, label, labelString = "";
 
             if(user) {
+                this.setUsername(id, name);
                 altNames = user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
             }
 
@@ -537,27 +554,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             this.showInfoMsg(html);
         },
-        listDroppedUsers: function() {
-
-        },
-        cleanup: function() {
-            // Upgrade storage to latest version
-            var ignoredUsers = localStorage.getItem('jetstuff.chathelper.ignoredusers'),
-                id;
-
-            if(ignoredUsers) {
-                ignoredUsers = JSON.parse(ignoredUsers);
-                for(var i = 0; i < ignoredUsers.length; i++) {
-                    id = ignoredUsers[i];
-                    this.userlist[id] = {
-                        names: [],
-                        ignored: true
-                    };
-                }
-                this.saveUserlist();
-                localStorage.removeItem('jetstuff.chathelper.ignoredusers');
-            }
-        }
+        cleanup: function() {}
     });
 
     jetstuff.chatHelper = new ChatHelper();
