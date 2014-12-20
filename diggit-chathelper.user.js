@@ -9,7 +9,7 @@
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
     var demoObj = document.createElement('a'),
-        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
+        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -39,7 +39,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|tip|ignore|drop|unignore|undrop|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|label|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         init: function() {
             this.cleanup();
@@ -87,7 +87,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return false;
         },
-        setLabel: function(name, width, color) {
+        setLabel: function(name, color, width) {
             name = name.replace(/[^a-z0-9\-]/gi, "");
 
             // Valid number between 1 and 6, default 3
@@ -103,8 +103,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: color
             };
 
-            console.log(this.labels[name]);
-
             return name;
         },
         getLabel: function(name) {
@@ -114,7 +112,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         deleteLabel: function(name, width, color) {
             name = name.replace(/[^a-z0-9\-]/gi, "");
-            
+
             if(name !== "default" && this.labels[name]) {
                 delete this.labels[name];
                 return true;
@@ -133,7 +131,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         labelUser: function(id, labelName) {
             var user = this.trackUser(id),
-                labelName = labelName.replace(/[^a-z0-9\-]/gi, "");
+                labelName = labelName ? labelName.replace(/[^a-z0-9\-]/gi, "") : false;
 
             if(user && labelName) {
                 user.label = labelName;
@@ -301,10 +299,56 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.showInfoMsg('No id given');
             }
         },
+        cmdCreateLabel: function(args) {
+            var name = args[0],
+                color = args[1],
+                width = args[2],
+                labelName = this.setLabel(name, color, width),
+                label;
+
+            if(labelName) {
+                label = this.getLabel(labelName);
+                this.showInfoMsg('Created label: '+labelName+' (color: '+label.color+', width: '+label.width+')');
+            } else {
+                this.showInfoMsg('Could not create label. Did you pass a valid label name? Only letters and numbers are allowed. Sorry!');
+            }
+        },
+        cmdRemoveLabel: function(args) {
+            var name = args[0],
+                labelName = this.deleteLabel(name);
+
+            if(labelName) {
+                this.showInfoMsg('Removed label '+labelName+' from all users.');
+            } else {
+                this.showInfoMsg('Could not remove label. Did you pass a valid label name?');
+            }
+        },
+        cmdLabel: function(args) {
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+                name = args[1] || "default",
+                labelName = this.labelUser(id, name),
+                username = this.getUsername(id);
+
+            if(labelName) {
+                this.showInfoMsg(username+' was labelled as '+labelName+'!');
+            } else {
+                this.showInfoMsg('Could not remove label. Did you pass a valid id and label name?');
+            }
+        },
+        cmdUnlabel: function(args) {
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+                username = this.getUsername(id);
+
+            if(this.unlabelUser(id)) {
+                this.showInfoMsg('Removed label from '+username+'!');
+            } else {
+                this.showInfoMsg('Not working. Is the user id valid?');
+            }
+        },
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
-                args = match[2] ? match[2].split(this.argsplitReg) : [],
+                args = match[2] ? match[2].split(this.argsplitRe) : [],
                 id, html, name, ignoredUsers;
 
             if(!command) {
@@ -325,6 +369,22 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 case 'undrop':
                     this.cmdUnignore(args);
                     break;
+                case 'hl':
+                case 'label':
+                    this.cmdLabel(args);
+                    break;
+                case 'unhl':
+                case 'unlabel':
+                    this.cmdUnlabel(args);
+                    break;
+                case 'addlabel':
+                case 'createlabel':
+                    this.cmdCreateLabel(args);
+                    break;
+                case 'removelabel':
+                case 'deletelabel':
+                    this.cmdRemoveLabel(args);
+                    break;
                 case 'version':
                 case 'v':
                     this.showInfoMsg('chathelper v'+this.version);
@@ -344,10 +404,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 user = this.trackUser(id, name),
                 altNames = "",
                 ignored = false,
-                idString;
+                idString, label, labelString = "";
 
-            if(id) {
-                altNames = user.names.length > 1 ? "Previous names: " + this.userlist[id].names.slice(0,-1).join(', ') : "";
+            if(user) {
+                altNames = user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
             }
 
             idString = altNames
@@ -365,6 +425,12 @@ var jetstuff = window.jetstuff = jetstuff || {};
             // Fuck that guy?
             if(id && !data["admin"] && this.isHardignored(id) && this.chatDrop) {
                 return;
+            }
+
+            // Has label?
+            if(user && user.label) {
+                label = this.getLabel(user.label);
+                labelString = 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"';
             }
 
             msg = msg.replace(/["']/g, "");
@@ -427,7 +493,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 trophyString = '<span>' + trophies[data["atrophy"]["id"]].getIcon(data["atrophy"]["tier"], id) + '</span> ';
             }
 
-            $chatbox.append('' + '<div class="chatmsgcontainer '+(ignored ? 'jetstuff-ignoreduser' : '')+'">' + '<div class="chatuser">' + trophyString + '<span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + '' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + ' <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div></div>');
+            $chatbox.append('' + '<div class="chatmsgcontainer '+(ignored ? 'jetstuff-ignoreduser' : '')+'" '+labelString+'>' + '<div class="chatuser">' + trophyString + '<span class="chatusertext ' + ((id) ? 'updateableusername puser' : '') + '" data-userid="' + id + '">' + '' + name + '</span> ' + (data["admin"] ? ' <span class="chatuseradmin">(staff)</span>' : "") + '<span class="activeText" data-userid="' + id + '"></span>' + '</div>' + idString + ' <div class="chattime">' + ("0" + hour).slice(-2) + ':' + ("0" + minute).slice(-2) + '</div>' + '    <div class="chatmsg ' + (data["userid"] == myuser.getID() ? "chatmsgme" : "") + (!data["userid"] ? "chatmsgbot" : "") + (data["admin"] ? " chatmsgadmin" : "") + '">' + msg + '</div></div>');
             $chatbox.stop();
             if(!document.hasFocus() && !ignored) {
                 chatmsgsblur++;
