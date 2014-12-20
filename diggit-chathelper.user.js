@@ -373,7 +373,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 if(labelName) {
                     this.showInfoMsg(username+' was labeled as '+labelName+'!');
                 } else {
-                    this.showInfoMsg('Could not remove label. Did you pass a valid id and label name?');
+                    this.showInfoMsg('Could label user. Did you pass a valid id?');
                 }
             }   
         },
