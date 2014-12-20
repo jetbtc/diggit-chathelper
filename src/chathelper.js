@@ -241,6 +241,66 @@ var jetstuff = window.jetstuff = jetstuff || {};
             
             return false;
         },
+        cmdIgnore: function(args) {
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+
+            if(typeof args[0] === "undefined") {
+                this.listIgnoredUsers(false);
+            } else if(args[0] === 'on') {
+                this.showInfoMsg('Ignoring enabled. Use `!ignore off` to disable it again');
+                this.chatIgnore = true;
+            } else if(args[0] === 'off') {
+                this.showInfoMsg('Ignoring disabled. Use `!ignore on` to enable it again');
+                this.chatIgnore = false;
+            } else if( this.ignoreUser(id) ) {
+                var name = this.getUsername(id);
+
+                if(name) {
+                    this.showInfoMsg('Ignored '+name+' (#'+id+')');
+                } else {
+                    this.showInfoMsg('Ignored user #'+id);
+                }
+            } else {
+                this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
+            }
+        },
+        cmdDrop: function(args) {
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+
+            if(typeof args[0] === "undefined") {
+                this.listIgnoredUsers(true);
+            } else if(args[0] === 'on') {
+                this.showInfoMsg('Dropping enabled. Use `!drop off` to disable it again');
+                this.chatDrop = true;
+            } else if(args[0] === 'off') {
+                this.showInfoMsg('Dropping disabled. Use `!drop on` to enable it again');
+                this.chatDrop = false;
+            } else if( this.ignoreUser(id, 1) ) {
+                var name = this.getUsername(id);
+
+                if(name) {
+                    this.showInfoMsg('Dropped '+name+' (#'+id+')');
+                } else {
+                    this.showInfoMsg('Dropped user #'+id);
+                }
+            } else {
+                this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
+            }
+        },
+        cmdUnignore: function(args) {
+            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
+            if( this.unignoreUser(id) ) {
+                var name = this.getUsername(id);
+
+                if(name) {
+                    this.showInfoMsg('Unignored '+name+' (#'+id+')');
+                } else {
+                    this.showInfoMsg('Unignored user #'+id);
+                }
+            } else {
+                this.showInfoMsg('No id given');
+            }
+        },
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
@@ -256,64 +316,14 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     this.showInfoMsg(helptext);
                     break;
                 case 'ignore':
-                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
-
-                    if(typeof args[0] === "undefined") {
-                        this.listIgnoredUsers(false);
-                    } else if(args[0] === 'on') {
-                        this.showInfoMsg('Ignoring enabled. Use `!ignore off` to disable it again');
-                        this.chatIgnore = true;
-                    } else if(args[0] === 'off') {
-                        this.showInfoMsg('Ignoring disabled. Use `!ignore on` to enable it again');
-                        this.chatIgnore = false;
-                    } else if( this.ignoreUser(id) ) {
-                        var name = this.getUsername(id);
-
-                        if(name) {
-                            this.showInfoMsg('Ignored '+name+' (#'+id+')');
-                        } else {
-                            this.showInfoMsg('Ignored user #'+id);
-                        }
-                    } else {
-                        this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
-                    }
+                    this.cmdIgnore(args);
                     break;
                 case 'drop':
-                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
-                    if(typeof args[0] === "undefined") {
-                        this.listIgnoredUsers(true);
-                    } else if(args[0] === 'on') {
-                        this.showInfoMsg('Dropping enabled. Use `!drop off` to disable it again');
-                        this.chatDrop = true;
-                    } else if(args[0] === 'off') {
-                        this.showInfoMsg('Dropping disabled. Use `!drop on` to enable it again');
-                        this.chatDrop = false;
-                    } else if( this.ignoreUser(id, 1) ) {
-                        var name = this.getUsername(id);
-
-                        if(name) {
-                            this.showInfoMsg('Dropped '+name+' (#'+id+')');
-                        } else {
-                            this.showInfoMsg('Dropped user #'+id);
-                        }
-                    } else {
-                        this.showInfoMsg('You can\'t ignore yourself or staffmembers.');
-                    }
+                    this.cmdDrop(args);
                     break;
                 case 'unignore':
                 case 'undrop':
-                    id = args[0] ? args[0].replace(/[^0-9]/, '') : 0;
-                    if( this.unignoreUser(id) ) {
-                        var name = this.getUsername(id);
-
-                        if(name) {
-                            this.showInfoMsg('Unignored '+name+' (#'+id+')');
-                        } else {
-                            this.showInfoMsg('Unignored user #'+id);
-                        }
-                    } else {
-                        this.showInfoMsg('No id given');
-                    }
+                    this.cmdUnignore(args);
                     break;
                 case 'version':
                 case 'v':
