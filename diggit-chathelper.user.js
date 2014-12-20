@@ -9,7 +9,7 @@
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
     var demoObj = document.createElement('a'),
-        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 5px;list-style:none}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
+        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 6px;list-style:none}.jetstuff-labellist{font-size:12px;margin:0 0 6px;padding:0 6px 0 0;list-style:none;}.jetstuff-labellist li{margin-bottom:3px;padding-left:12px;}.jetstuff-labellist li:last-child{margin-bottom:0}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -39,13 +39,14 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         init: function() {
             this.cleanup();
 
             this.loadUserlist();
+            this.loadLabels();
 
             this.rebindChatsubmit();
             this.rebindChathandler();
@@ -123,7 +124,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 delete this.labels[name];
 
                 this.saveLabels();
-                
+
                 return name;
             }
             return null;
@@ -163,6 +164,25 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return false;
         },
+        getLabeledUsers: function() {
+            var users = this.userlist,
+                labeledUsers = [],
+                label, user, k;
+
+            for(k in this.userlist) {
+                user = users[k];
+
+                if( user.label ) {
+                    labeledUsers.push(+k);
+                }
+            }
+
+            labeledUsers.sort(function(a, b) {
+                return b < a;
+            });
+
+            return labeledUsers;
+        },
         getUserById: function(id) {
             var id = parseInt(id) || 0,
                 users = this.userlist,
@@ -194,7 +214,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
         },
         getUsername: function(id) {
-            var user = this.getUserById(id);
+            var user = (typeof id === "object") ? id : this.getUserById(id);
 
             if(user && user.names) {
                 return user.names[user.names.length-1];
@@ -323,7 +343,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             if(labelName) {
                 label = this.getLabel(labelName);
-                this.showInfoMsg('Created label: '+labelName+' (color: '+label.color+', width: '+label.width+')');
+                this.showInfoMsg('Created label: '+labelName+' (color: '+label.color+', weight: '+label.width+')');
             } else {
                 this.showInfoMsg('Could not create label. Did you pass a valid label name? Only letters and numbers are allowed. Sorry!');
             }
@@ -341,16 +361,21 @@ var jetstuff = window.jetstuff = jetstuff || {};
         cmdLabel: function(args) {
             var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
                 name = args[1] || "default",
-                labelName = this.labelUser(id, name),
+                labelName, username;
+
+
+            if(!id) {
+                this.listLabeledUsers();
+            } else {
+                labelName = this.labelUser(id, name);
                 username = this.getUserString(id);
 
-            console.log("labelName", labelName);
-
-            if(labelName) {
-                this.showInfoMsg(username+' was labelled as '+labelName+'!');
-            } else {
-                this.showInfoMsg('Could not remove label. Did you pass a valid id and label name?');
-            }
+                if(labelName) {
+                    this.showInfoMsg(username+' was labeled as '+labelName+'!');
+                } else {
+                    this.showInfoMsg('Could not remove label. Did you pass a valid id and label name?');
+                }
+            }   
         },
         cmdUnlabel: function(args) {
             var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
@@ -371,6 +396,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return false;
             }
 
+            console.log('COMMAND', command, args);
+
             switch(command) {
                 case 'help':
                     this.showInfoMsg(helptext);
@@ -385,8 +412,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 case 'undrop':
                     this.cmdUnignore(args);
                     break;
+                case 'labels':
+                    console.log('Plurals, bitches');
+                    this.listLabels();
+                    break;
                 case 'hl':
                 case 'label':
+                    console.log('Triggered label');
                     this.cmdLabel(args);
                     break;
                 case 'unhl':
@@ -424,6 +456,12 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             if(user) {
                 this.setUsername(id, name);
+                // Has label?
+                label = this.getLabel(user.label);
+                console.log(user, label, labelString);
+                if(label) {
+                    labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
+                }
                 altNames = user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
             }
 
@@ -442,12 +480,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             // Fuck that guy?
             if(id && !data["admin"] && this.isHardignored(id) && this.chatDrop) {
                 return;
-            }
-
-            // Has label?
-            if(user && user.label) {
-                label = this.getLabel(user.label);
-                labelString = 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"';
             }
 
             msg = msg.replace(/["']/g, "");
@@ -551,6 +583,47 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 html += '</ul><div class="jetstuff-summary">Total: '+ignoredUsers.length+'</div>';
             } else {
                 html = "No ignored users yet. Use `!ignore [id]` to ignore annoying users";
+            }
+            this.showInfoMsg(html);
+        },
+        listLabels: function() {
+            var labels = this.labels,
+                i = 0,
+                html, label, width, k, labelString;
+
+            if(labels) {
+                html = 'List of labels: <ul class="jetstuff-labellist">';
+
+                for(k in labels) {
+                    label = labels[k];
+                    labelString = 'style="box-shadow: inset '+(2*label.width)+'px 0 0 '+(-label.width)+'px '+label.color+'"';
+                    html += '<li '+labelString+'>'+k+' - color: '+label.color+', weight: '+label.width+'</li>';
+                    i++;
+                }
+
+                html += '</ul><div class="jetstuff-summary">Total: '+i+'</div>';
+            } else {
+                html = "No labels created yet. Use `!createlabel [labelname] [color] [weight]` to create labels.";
+            }
+            this.showInfoMsg(html);
+        },
+        listLabeledUsers: function() {
+            var labeledUsers = this.getLabeledUsers(),
+                id, user, label, name, html;
+
+            html = "Labeled users:";
+
+            if(labeledUsers) {
+                html += '<ul class="jetstuff-userlist">';
+                for(var i=0; i<labeledUsers.length; i++) {
+                    id = labeledUsers[i];
+                    user = this.getUserById(id);
+                    name = this.getUsername(user);
+                    html += '<li>#'+id+(name ? ' - '+name : '')+' - '+user.label+'</li>';
+                }
+                html += '</ul><div class="jetstuff-summary">Total: '+labeledUsers.length+'</div>';
+            } else {
+                html = "No users labeled. Use `!createlabel [labelname] [color] [weight]` followed by `!label [id] [name]` to label users";
             }
             this.showInfoMsg(html);
         },
