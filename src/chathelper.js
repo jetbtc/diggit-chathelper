@@ -131,6 +131,29 @@ var jetstuff = window.jetstuff = jetstuff || {};
         saveLabels: function() {
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
+        labelUser: function(id, labelName) {
+            var user = this.trackUser(id),
+                labelName = labelName.replace(/[^a-z0-9\-]/gi, "");
+
+            if(user && labelName) {
+                user.label = labelName;
+                this.saveUserlist();
+
+                return true;
+            }
+            return false;
+        },
+        unlabelUser: function(id) {
+            var user = this.trackUser(id);
+
+            if(user && user.label) {
+                delete user.label;
+                this.saveUserlist();
+
+                return true;
+            }
+            return false;
+        },
         trackUser: function(id, name) {
             var user = null,
                 users = this.userlist,
