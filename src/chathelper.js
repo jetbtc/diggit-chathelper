@@ -43,10 +43,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         init: function() {
-            this.cleanup();
-
             this.loadUserlist();
             this.loadLabels();
+
+            this.cleanup();
 
             this.rebindChatsubmit();
             this.rebindChathandler();
@@ -118,12 +118,19 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return name.length ? this.labels[name] || null : null;
         },
         deleteLabel: function(name, width, color) {
-            var name = name ? name.replace(this.labelFilterRe, "") : "";
+            var name = name ? name.replace(this.labelFilterRe, "") : "",
+                users = this.userlist,
+                user, k;
 
             if(name.length && name !== "default" && this.labels[name]) {
                 delete this.labels[name];
-
                 this.saveLabels();
+
+                for(k in users) {
+                    user = users[k];
+
+                    if(user.label === name) delete user["label"];
+                }
 
                 return name;
             }
@@ -623,7 +630,20 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             this.showInfoMsg(html);
         },
-        cleanup: function() {}
+        cleanup: function() {
+            var users = this.userlist,
+                user, k;
+
+            for(k in users) {
+                user = users[k];
+
+                if(user.ignored === false) delete user["ignored"];
+                if(user.hardignored === false) delete user["hardignored"];
+                if(user.label && !this.getLabel(user.label)) delete user["label"];
+            }
+
+            this.saveUserlist();
+        }
     });
 
     jetstuff.chatHelper = new ChatHelper();
