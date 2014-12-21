@@ -143,8 +143,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var user = this.getUserById(id),
                 labelName = labelName ? labelName.replace(this.labelFilterRe, "") : false;
 
-            console.log(id, user);
-
             if(user && labelName) {
                 user.label = labelName;
                 this.saveUserlist();
@@ -454,7 +452,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.setUsername(id, name);
                 // Has label?
                 label = this.getLabel(user.label);
-                console.log(user, label, labelString);
+
                 if(label) {
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
@@ -605,17 +603,19 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         listLabeledUsers: function() {
             var labeledUsers = this.getLabeledUsers(),
-                id, user, label, name, html;
+                id, user, label, labelString, name, html;
 
             html = "Labeled users:";
 
             if(labeledUsers) {
-                html += '<ul class="jetstuff-userlist">';
+                html += '<ul class="jetstuff-labellist">';
                 for(var i=0; i<labeledUsers.length; i++) {
                     id = labeledUsers[i];
                     user = this.getUserById(id);
+                    label = this.getLabel(user.label);
+                    labelString = label ? 'style="box-shadow: inset '+(2*label.width)+'px 0 0 '+(-label.width)+'px '+label.color+'"' : "";
                     name = this.getUsername(user);
-                    html += '<li>#'+id+(name ? ' - '+name : '')+' - '+user.label+'</li>';
+                    html += '<li '+labelString+'>#'+id+(name ? ' - '+name : '')+' - '+user.label+'</li>';
                 }
                 html += '</ul><div class="jetstuff-summary">Total: '+labeledUsers.length+'</div>';
             } else {
