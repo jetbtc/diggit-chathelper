@@ -396,8 +396,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 return false;
             }
 
-            console.log('COMMAND', command, args);
-
             switch(command) {
                 case 'help':
                     this.showInfoMsg(helptext);
@@ -413,12 +411,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     this.cmdUnignore(args);
                     break;
                 case 'labels':
-                    console.log('Plurals, bitches');
                     this.listLabels();
                     break;
                 case 'hl':
                 case 'label':
-                    console.log('Triggered label');
                     this.cmdLabel(args);
                     break;
                 case 'unhl':
