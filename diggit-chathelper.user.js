@@ -33,6 +33,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
         chatDrop: true,
         unignorable: [0, 1],
         userlist: {},
+        usersById: {},
+        usersByName: {},
         labels: {
             "default": {
                 width: 3,
@@ -42,16 +44,20 @@ var jetstuff = window.jetstuff = jetstuff || {};
         commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
+        nameFilterRe: /[^a-z0-9]/gi,
         init: function() {
             this.loadUserlist();
             this.loadLabels();
 
             this.cleanup();
 
-            this.rebindChatsubmit();
-            this.rebindChathandler();
-
             console.info("chathelper active");
+
+            return;
+
+            // this.rebindChatsubmit();
+            // this.rebindChathandler();
+
         },
         isIgnored: function(id) {
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
@@ -60,7 +66,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
         },
         ignoreUser: function(id, hardignore) {
-            var user = this.getUserById(id);
+            var user = this.getUserById(id) ;
 
             if(user && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
 
@@ -142,6 +148,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(data) {
                 this.labels = JSON.parse(data);
             }
+
+            return this.labels;
         },
         saveLabels: function() {
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
@@ -209,6 +217,24 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return user;
         },
+        getUserByName: function(name) {
+            var name = name ? name.replace(this.nameFilterRe, "") : false,
+                users = this.userlist,
+                user = null, k, lastIndex;
+
+            if(name.length) {
+                for(k in users) {
+                    user = users[k];
+                    lastIndex = user.names.length ? user.names.length - 1 : false;
+
+                    if(name && lastIndex !== false && (user.names[lastIndex] === name)) {
+                        return user;
+                    }
+                }
+            }
+
+            return user;
+        },
         setUsername: function(id, name) {
             var user = this.getUserById(id),
                 lastIndex = user ? user.names.length - 1 : false;
@@ -218,8 +244,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.saveUserlist();
             }
         },
-        getUsername: function(id) {
-            var user = (typeof id === "object") ? id : this.getUserById(id);
+        getUsername: function(user) {
+            var user = (typeof user === "object") ? user : this.getUserById(user) || this.getUserByName(user);
 
             if(user && user.names) {
                 return user.names[user.names.length-1];
@@ -256,11 +282,24 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return ignoredUsers;
         },
         loadUserlist: function() {
-            var data = localStorage.getItem('jetstuff.chathelper.userlist');
+            var data = localStorage.getItem('jetstuff.chathelper.userlist'),
+                usersById = this.usersById,
+                usersByName = this.usersByName,
+                users;
 
             if(data) {
-                this.userlist = JSON.parse(data);
+                users = this.userlist = JSON.parse(data);
+
+                if(users instanceof Array) {
+                    users.forEach(function(user) {
+                        usersById[user.id] = user;
+                        
+                        if(user.name) usersByName[user.name] = user;
+                    });
+                }
             }
+
+            return this.userlist;
         },
         saveUserlist: function() {
             localStorage.setItem('jetstuff.chathelper.userlist', JSON.stringify(this.userlist));
@@ -496,7 +535,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             msg = msg.split(" ");
 
-
             for(var i = 0; i < msg.length; i++) {
                 msg[i] = msg[i].replace(/["']/g, '');
                 var firsttwo = msg[i].substring(0, 2);
@@ -632,17 +670,31 @@ var jetstuff = window.jetstuff = jetstuff || {};
         },
         cleanup: function() {
             var users = this.userlist,
+                userArr = [],
                 user, k;
 
-            for(k in users) {
-                user = users[k];
+            // Convert local user directory to latest schema
+            if( !(users instanceof Array) ) {
+                for(k in users) {
+                    user = users[k];
 
-                if(user.ignored === false) delete user["ignored"];
-                if(user.hardignored === false) delete user["hardignored"];
-                if(user.label && !this.getLabel(user.label)) delete user["label"];
+                    user.id = k;
+                    if(user.names.length) {
+
+                    }
+
+                    if(user.names.length) user.name = user.names.pop();
+                    if(user.ignored === false) delete user["ignored"];
+                    if(user.hardignored === false) delete user["hardignored"];
+                    if(user.label && !this.getLabel(user.label)) delete user["label"];
+
+                    userArr.push(user);
+                }
+
+                this.userlist = userArr;
+                this.saveUserlist();
+                this.loadUserlist();
             }
-
-            this.saveUserlist();
         }
     });
 
