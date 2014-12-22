@@ -28,14 +28,18 @@ The following commands are available as of now:
 
 - `!help` - Get a help message with a summary of the available commands.
 - `!version` - Check the current version number. Compare with the one on the github page
-- `!ignore` - Get a list of ignored users
+- `!ignore` - A list of ignored users
 - `!ignore [id]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
-- `!drop` - get a list of dropped users
-- `!ignore on/off` - toggle ignoring on/off to get an idea what this script is saving you from
-- `!drop on/off` - toggle dropping of messages on/off
+- `!drop` - A list of dropped users
+- `!ignore on/off` - Toggle ignoring on/off to get an idea what this script is saving you from
+- `!drop on/off` - Toggle dropping of messages on/off
 - `!drop [id]` - For the annoying spammers, you have this gem. Completely drop their messages from the chat!
 - `!unignore [id]` - Undo `!ignore` and `!drop`
 - `!undrop [id]` - Alias of `!unignore`
+- `!createlabel [name] [color] [weight]` - Create a label to use on people. `color` can be any valid CSS color: A hex code, rgb or hsl values, or one of the 140+ available color names ([external list](http://www.cssportal.com/css3-color-names/)) while `weight` is the width of the label in chat. `1` - `6` are valid, `3` being the default.
+- `!labels` - A list of labels you created
+- `!label` - A list of users you labeled
+- `!label [id] [labelname]` - Label/highlight a user. `labelname` is optional.
 
 Examples:
 
@@ -47,8 +51,21 @@ Examples:
 - `!unignore 8760` - That would work.
 - `!ignore off` - The better choice: Temporarily turn ignoring off.
 - `!ignore on` - And to get it back.. same works for `!drop`
+- `!createlabel friend orange` - Create a label named `friend` in orange, with the default weight of 3
+- `!createlabel friend #FF0 5` - Make the friend label yellow by using a hex code and a little wider. (Unlike ids, the `#` is important here)
+- `!label 8760 friend` - Highlight a user with the newly created friend label
+- `!unlabel 8760` - Or not.
+- `!removelabel friend` - Remove a label entirely.
+- `!labels` - To see check if any other labels are left (at least `default`)
 
 ### Changelog
+
+#### v0.3.2
+- Labels! `!createlabel`, `!labels`, `!label`/`!hl`, `!unlabel`/ `!unhl`
+- Page title of the unfocused window *(number of new messages in chat)* does no longer get updated by ignored users
+- Fix: Keep the local user directory a little tighter and cleaner
+- Fix: Double clicking on user ids also selects part of the time
+- Fix: Documented `!undrop` not actually a command
 
 #### v0.3.1
 - Ignore didn't fully work after trophy update. Works now!
