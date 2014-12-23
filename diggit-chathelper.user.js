@@ -196,8 +196,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
         getUser: function(user) {
             var userObj = null;
 
-            console.log("getUser", user);
-
             if(!user) {
                 return null;
             } else if(user instanceof Object) {
@@ -213,8 +211,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(!userObj) {
                 userObj = this.usersByName[ user.toString().replace(this.nameFilterRe, "") ];
             }
-
-            console.log("gotUser", userObj);
 
             return userObj;
         },
@@ -281,11 +277,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.saveUserlist();
             }
         },
-        getUsername: function(user) {
-            var user = this.getUser(user);
-
-            return user.name || null;
-        },
         getUserString: function(user) {
             var user = this.getUser(user);
 
@@ -294,7 +285,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             } else {
                 return 'user #'+user.id;
             }
-            
         },
         getIgnoredUsers: function(hardignore) {
             var users = this.userlist,
@@ -468,8 +458,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
                 args = match[2] ? match[2].split(this.argsplitRe) : [];
-
-            console.log("command", command, args);
 
             if(!command) {
                 return false;
