@@ -29,17 +29,17 @@ The following commands are available as of now:
 - `!help` - Get a help message with a summary of the available commands.
 - `!version` - Check the current version number. Compare with the one on the github page
 - `!ignore` - A list of ignored users
-- `!ignore [id]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
+- `!ignore [useruser]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
 - `!drop` - A list of dropped users
 - `!ignore on/off` - Toggle ignoring on/off to get an idea what this script is saving you from
 - `!drop on/off` - Toggle dropping of messages on/off
-- `!drop [id]` - For the annoying spammers, you have this gem. Completely drop their messages from the chat!
-- `!unignore [id]` - Undo `!ignore` and `!drop`
-- `!undrop [id]` - Alias of `!unignore`
+- `!drop [user]` - For the annoying spammers, you have this gem. Completely drop their messages from the chat!
+- `!unignore [user]` - Undo `!ignore` and `!drop`
+- `!undrop [user]` - Alias of `!unignore`
 - `!createlabel [name] [color] [weight]` - Create a label to use on people. `color` can be any valid CSS color: A hex code, rgb or hsl values, or one of the 140+ available color names ([external list](http://www.cssportal.com/css3-color-names/)) while `weight` is the width of the label in chat. `1` - `6` are valid, `3` being the default.
 - `!labels` - A list of labels you created
 - `!label` - A list of users you labeled
-- `!label [id] [labelname]` - Label/highlight a user. `labelname` is optional.
+- `!label [user] [labelname]` - Label/highlight a user. `labelname` is optional.
 
 Examples:
 
@@ -47,6 +47,7 @@ Examples:
 - `!ignore 8760` - Ignore testificate, the guy I use to test stuff.
 - `!ignore 8,760` - fine, too
 - `!ignore #8760` - yep, works.
+- `!ignore testuser` - **New:** Optionally use names everywhere you had to use ids earler!
 - `!drop 8760` - Completely hide that stuff.
 - `!unignore 8760` - That would work.
 - `!ignore off` - The better choice: Temporarily turn ignoring off.
@@ -61,9 +62,10 @@ Examples:
 ### Changelog
 
 #### v0.3.2
+- Major restructuring of the locally kept user directory for more flexibility!
+- As a result, user names now work in commands instead of ids
 - Labels! `!createlabel`, `!labels`, `!label`/`!hl`, `!unlabel`/ `!unhl`
 - Page title of the unfocused window *(number of new messages in chat)* does no longer get updated by ignored users
-- Fix: Keep the local user directory a little tighter and cleaner
 - Fix: Double clicking on user ids also selects part of the time
 - Fix: Documented `!undrop` not actually a command
 

@@ -53,24 +53,24 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             console.info("chathelper active");
 
-            return;
-
-            // this.rebindChatsubmit();
-            // this.rebindChathandler();
+            this.rebindChatsubmit();
+            this.rebindChathandler();
 
         },
-        isIgnored: function(id) {
-            return this.userlist.hasOwnProperty(id) ? this.userlist[id].ignored : false;
+        isIgnored: function(user) {
+            var user = this.getUser(user);
+            return user ? user.ignored : false;
         },
-        isHardignored: function(id) {
-            return this.userlist.hasOwnProperty(id) ? this.userlist[id].hardignored : false;
+        isHardignored: function(user) {
+            var user = this.getUser(user);
+            return user ? user.hardignored : false;
         },
-        ignoreUser: function(id, hardignore) {
-            var user = this.getUserById(id) ;
+        ignoreUser: function(user, hardignore) {
+            var user = this.getUser(user);
 
-            if(user && this.unignorable.indexOf(id) === -1 && id != myuser.getID()) {
+            if(user && this.unignorable.indexOf(user.id) === -1 && user.id != myuser.getID()) {
 
-                this.unignoreUser(id);
+                this.unignoreUser(user);
 
                 if(hardignore) {
                     user.hardignored = true;
@@ -83,8 +83,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return false;
         },
-        unignoreUser: function(id) {
-            var user = this.getUserById(id);
+        unignoreUser: function(user) {
+            var user = this.getUser(user);
 
             if(user) {
                 delete user["hardignored"];
@@ -123,22 +123,20 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             return name.length ? this.labels[name] || null : null;
         },
-        deleteLabel: function(name, width, color) {
-            var name = name ? name.replace(this.labelFilterRe, "") : "",
+        deleteLabel: function(labelName, width, color) {
+            var labelName = labelName ? labelName.replace(this.labelFilterRe, "") : "",
                 users = this.userlist,
-                user, k;
+                user;
 
-            if(name.length && name !== "default" && this.labels[name]) {
-                delete this.labels[name];
+            if(labelName.length && labelName !== "default" && this.labels[labelName]) {
+                delete this.labels[labelName];
                 this.saveLabels();
 
-                for(k in users) {
-                    user = users[k];
+                users.forEach(function(user) {
+                    if(user.label === labelName) delete user["label"];
+                });
 
-                    if(user.label === name) delete user["label"];
-                }
-
-                return name;
+                return labelName;
             }
             return null;
         },
@@ -154,8 +152,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
         saveLabels: function() {
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
         },
-        labelUser: function(id, labelName) {
-            var user = this.getUserById(id),
+        labelUser: function(user, labelName) {
+            var user = this.getUser(user),
                 labelName = labelName ? labelName.replace(this.labelFilterRe, "") : false;
 
             if(user && labelName) {
@@ -166,8 +164,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
             return false;
         },
-        unlabelUser: function(id) {
-            var user = this.getUserById(id);
+        unlabelUser: function(user) {
+            var user = this.getUser(user);
 
             if(user && user.label) {
                 delete user.label;
@@ -182,19 +180,51 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 labeledUsers = [],
                 label, user, k;
 
-            for(k in this.userlist) {
-                user = users[k];
 
+            users.forEach(function(user) {
                 if( user.label ) {
                     labeledUsers.push(+k);
                 }
-            }
+            });
 
             labeledUsers.sort(function(a, b) {
                 return b < a;
             });
 
             return labeledUsers;
+        },
+        getUser: function(user) {
+            var userObj = null;
+
+            console.log("getUser", user);
+
+            if(!user) {
+                return null;
+            } else if(user instanceof Object) {
+                return user;
+            }
+
+            if(typeof user === "number" || user == parseInt(user)) {
+                userObj = this.usersById[ user ];
+            }
+            if(!userObj && user.toString().indexOf('#') === 0) {
+                userObj = this.usersById[ user.toString().replace(/[^0-9]/g, "") ];
+            }
+            if(!userObj) {
+                userObj = this.usersByName[ user.toString().replace(this.nameFilterRe, "") ];
+            }
+
+            console.log("gotUser", userObj);
+
+            return userObj;
+        },
+        registerUser: function(id, name) {
+            if(id) {
+                if(!this.getUserById[id]) {
+
+                }
+            }
+            return false;
         },
         getUserById: function(id) {
             var id = parseInt(id) || 0,
@@ -235,30 +265,34 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             return user;
         },
-        setUsername: function(id, name) {
-            var user = this.getUserById(id),
-                lastIndex = user ? user.names.length - 1 : false;
+        setUsername: function(user, name) {
+            var user = this.getUser(user),
+                name = name.toString().replace(this.nameFilterRe, "");
 
-            if(name && lastIndex !== false && (lastIndex === -1 || user.names[lastIndex] !== name)) {
-                user.names.push(name);
+            if(name && name !== user.name) {
+                if(user.name) {
+                    user.names.push(user.name);
+                    delete this.usersByName[user.name];
+                }
+
+                user.name = name;
+                this.usersByName[name] = user;
+
                 this.saveUserlist();
             }
         },
         getUsername: function(user) {
-            var user = (typeof user === "object") ? user : this.getUserById(user) || this.getUserByName(user);
+            var user = this.getUser(user);
 
-            if(user && user.names) {
-                return user.names[user.names.length-1];
-            }
-            return null;
+            return user.name || null;
         },
-        getUserString: function(id) {
-            var user = this.getUserById(id);
+        getUserString: function(user) {
+            var user = this.getUser(user);
 
-            if(user && user.names) {
-                return user.names[user.names.length-1]+' (#'+id+')';
+            if(user && user.name) {
+                return user.name+' (#'+user.id+')';
             } else {
-                return 'user #'+id;
+                return 'user #'+user.id;
             }
             
         },
@@ -266,14 +300,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var users = this.userlist,
                 ignoredUsers = [],
                 user, k;
-
-            for(k in this.userlist) {
-                user = users[k];
-
-                if( (!hardignore && user.ignored) || (hardignore && user.hardignored) ) {
-                    ignoredUsers.push(+k);
-                }
-            }
+            
+            ignoredUsers = users.filter(function(user) {
+                return (hardignore && user.hardignored) || user.ignored;
+            });
 
             ignoredUsers.sort(function(a, b) {
                 return b < a;
@@ -327,7 +357,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return false;
         },
         cmdIgnore: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+            var user = this.getUser(args[0]),
                 name;
 
             if(typeof args[0] === "undefined") {
@@ -338,8 +368,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             } else if(args[0] === 'off') {
                 this.showInfoMsg('Ignoring disabled. Use `!ignore on` to enable it again');
                 this.chatIgnore = false;
-            } else if( this.ignoreUser(id) ) {
-                name = this.getUserString(id);
+            } else if( this.ignoreUser(user) ) {
+                name = this.getUserString(user);
 
                 this.showInfoMsg('Ignored '+name);
             } else {
@@ -347,7 +377,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
         },
         cmdDrop: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+            var user = this.getUser(args[0]),
                 name;
 
             if(typeof args[0] === "undefined") {
@@ -358,8 +388,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             } else if(args[0] === 'off') {
                 this.showInfoMsg('Dropping disabled. Use `!drop on` to enable it again');
                 this.chatDrop = false;
-            } else if( this.ignoreUser(id, 1) ) {
-                name = this.getUserString(id);
+            } else if( this.ignoreUser(user, 1) ) {
+                name = this.getUserString(user);
 
                 this.showInfoMsg('Dropped '+name);
             } else {
@@ -367,11 +397,11 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
         },
         cmdUnignore: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+            var user = this.getUser(args[0]),
                 name;
 
-            if( this.unignoreUser(id) ) {
-                name = this.getUserString(id);
+            if( this.unignoreUser(user) ) {
+                name = this.getUserString(user);
 
                 this.showInfoMsg('Unignored '+name);
             } else {
@@ -403,29 +433,32 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
         },
         cmdLabel: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
+            var user = this.getUser(args[0]),
                 name = args[1] || "default",
                 labelName, username;
 
 
-            if(!id) {
+            if(typeof args[0] === "undefined") {
                 this.listLabeledUsers();
-            } else {
+            } else if(user) {
                 labelName = this.labelUser(id, name);
                 username = this.getUserString(id);
 
                 if(labelName) {
                     this.showInfoMsg(username+' was labeled as '+labelName+'!');
                 } else {
-                    this.showInfoMsg('Could label user. Did you pass a valid id?');
+                    this.showInfoMsg('Could label user. The label name seems to be wrong.');
                 }
-            }   
+            } else {
+                this.showInfoMsg('Could not label user. The user id/name seems to be wrong.');
+            }
         },
         cmdUnlabel: function(args) {
-            var id = args[0] ? args[0].replace(/[^0-9]/, '') : 0,
-                username = this.getUserString(id);
+            var user = this.getUser(args[0]),
+                username;
 
-            if(this.unlabelUser(id)) {
+            if(this.unlabelUser(user)) {
+                username = this.getUserString(user);
                 this.showInfoMsg('Removed label from '+username+'!');
             } else {
                 this.showInfoMsg('Not working. Is the user id valid?');
@@ -435,6 +468,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
                 args = match[2] ? match[2].split(this.argsplitRe) : [];
+
+            console.log("command", command, args);
 
             if(!command) {
                 return false;
@@ -489,13 +524,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 id = data["userid"],
                 name = data["username"],
                 msg = data["msg"],
-                user = this.getUserById(id),
+                user = this.getUser(id),
                 altNames = "",
                 ignored = false,
                 idString, label, labelString = "";
 
             if(user) {
-                this.setUsername(id, name);
+                this.setUsername(user, name);
                 // Has label?
                 label = this.getLabel(user.label);
 
@@ -503,6 +538,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
                 altNames = user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
+            } else {
+                // TODO REGISTERUSER
             }
 
             idString = altNames
@@ -615,9 +652,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(ignoredUsers) {
                 html += '<ul class="jetstuff-userlist">';
                 for(var i=0; i<ignoredUsers.length; i++) {
-                    id = ignoredUsers[i];
-                    name = this.getUsername(id);
-                    html += '<li>#'+id+(name ? ' - '+name : '')+'</li>';
+                    user = ignoredUsers[i];
+                    html += '<li>#'+user.id+(user.name ? ' - '+user.name : '')+'</li>';
                 }
                 html += '</ul><div class="jetstuff-summary">Total: '+ignoredUsers.length+'</div>';
             } else {
@@ -655,12 +691,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(labeledUsers) {
                 html += '<ul class="jetstuff-labellist">';
                 for(var i=0; i<labeledUsers.length; i++) {
-                    id = labeledUsers[i];
-                    user = this.getUserById(id);
+                    user = labeledUsers[i];
                     label = this.getLabel(user.label);
                     labelString = label ? 'style="box-shadow: inset '+(2*label.width)+'px 0 0 '+(-label.width)+'px '+label.color+'"' : "";
-                    name = this.getUsername(user);
-                    html += '<li '+labelString+'>#'+id+(name ? ' - '+name : '')+' - '+user.label+'</li>';
+                    html += '<li '+labelString+'>#'+user.id+(user.name ? ' - '+user.name : '')+' - '+user.label+'</li>';
                 }
                 html += '</ul><div class="jetstuff-summary">Total: '+labeledUsers.length+'</div>';
             } else {
