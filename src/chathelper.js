@@ -431,8 +431,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
             if(typeof args[0] === "undefined") {
                 this.listLabeledUsers();
             } else if(user) {
-                labelName = this.labelUser(id, name);
-                username = this.getUserString(id);
+                labelName = this.labelUser(user, name);
+                username = this.getUserString(user);
 
                 if(labelName) {
                     this.showInfoMsg(username+' was labeled as '+labelName+'!');
