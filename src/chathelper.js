@@ -260,7 +260,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 user, k;
             
             ignoredUsers = users.filter(function(user) {
-                return (hardignore && user.hardignored) || user.ignored;
+                return (hardignore && user.hardignored) || (!hardignore && user.ignored);
             });
 
             ignoredUsers.sort(function(a, b) {
