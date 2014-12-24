@@ -55,7 +55,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             this.rebindChatsubmit();
             this.rebindChathandler();
-
         },
         isIgnored: function(user) {
             var user = this.getUser(user);
@@ -180,15 +179,12 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 labeledUsers = [],
                 label, user, k;
 
-
-            users.forEach(function(user) {
-                if( user.label ) {
-                    labeledUsers.push(+k);
-                }
+            labeledUsers = users.filter(function(user) {
+                return !!user.label;
             });
 
             labeledUsers.sort(function(a, b) {
-                return b < a;
+                return b.id < a.id;
             });
 
             return labeledUsers;
@@ -215,51 +211,19 @@ var jetstuff = window.jetstuff = jetstuff || {};
             return userObj;
         },
         registerUser: function(id, name) {
-            if(id) {
-                if(!this.getUserById[id]) {
+            var user;
 
+            if(id && name) {
+                if(!this.usersById[id]) {
+                    user = this.usersById[id] = this.usersByName[name] = {
+                        id: id,
+                        name: name
+                    };
+                    this.userlist.push(user);
                 }
+                return true;
             }
             return false;
-        },
-        getUserById: function(id) {
-            var id = parseInt(id) || 0,
-                users = this.userlist,
-                user = null,
-                length, lastIndex;
-
-            if(!id) {
-                return null;
-            }
-
-            if(users.hasOwnProperty(id)) {
-                user = users[id];
-            } else {
-                user = users[id] = {
-                    ignored: false,
-                    names: name ? [name] : []
-                };
-                this.saveUserlist();
-            }
-            return user;
-        },
-        getUserByName: function(name) {
-            var name = name ? name.replace(this.nameFilterRe, "") : false,
-                users = this.userlist,
-                user = null, k, lastIndex;
-
-            if(name.length) {
-                for(k in users) {
-                    user = users[k];
-                    lastIndex = user.names.length ? user.names.length - 1 : false;
-
-                    if(name && lastIndex !== false && (user.names[lastIndex] === name)) {
-                        return user;
-                    }
-                }
-            }
-
-            return user;
         },
         setUsername: function(user, name) {
             var user = this.getUser(user),
@@ -267,7 +231,11 @@ var jetstuff = window.jetstuff = jetstuff || {};
 
             if(name && name !== user.name) {
                 if(user.name) {
-                    user.names.push(user.name);
+                    if(user.names instanceof Array) {
+                        user.names.push(user.name);
+                    } else {
+                        user.names = [name];
+                    }
                     delete this.usersByName[user.name];
                 }
 
@@ -296,7 +264,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
             });
 
             ignoredUsers.sort(function(a, b) {
-                return b < a;
+                return b.id < a.id;
             });
 
             return ignoredUsers;
@@ -525,9 +493,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 if(label) {
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
-                altNames = user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
-            } else {
-                // TODO REGISTERUSER
+                altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
+            } else if(id) {
+                this.registerUser(id, name);
             }
 
             idString = altNames
@@ -701,9 +669,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     user = users[k];
 
                     user.id = k;
-                    if(user.names.length) {
-
-                    }
 
                     if(user.names.length) user.name = user.names.pop();
                     if(user.ignored === false) delete user["ignored"];
