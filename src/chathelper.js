@@ -205,45 +205,44 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 userObj = this.usersById[ user.toString().replace(/[^0-9]/g, "") ];
             }
             if(!userObj) {
-                userObj = this.usersByName[ user.toString().replace(this.nameFilterRe, "") ];
+                userObj = this.usersByName[ user.toString().toLowerCase().replace(this.nameFilterRe, "") ];
             }
 
             return userObj;
         },
         registerUser: function(id, name) {
-            var user;
+            var name = name.toString().replace(this.nameFilterRe, ""),
+                user;
 
             if(id && name) {
                 if(!this.usersById[id]) {
-                    user = this.usersById[id] = this.usersByName[name] = {
+                    user = this.usersById[id] = this.usersByName[name.toLowerCase()] = {
                         id: id,
                         name: name
                     };
                     this.userlist.push(user);
+                    this.saveUserlist();
+                } else {
+                    user = this.usersById[id];
+
+                    if(user.name !== name) {
+                        if(user.name) {
+                            if(user.names instanceof Array) {
+                                user.names.push(user.name);
+                            } else {
+                                user.names = [name];
+                            }
+                            delete this.usersByName[user.name.toLowerCase()];
+                        }
+
+                        user.name = name;
+                        this.usersByName[name.toLowerCase()] = user;
+                        this.saveUserlist();
+                    }
                 }
                 return true;
             }
             return false;
-        },
-        setUsername: function(user, name) {
-            var user = this.getUser(user),
-                name = name.toString().replace(this.nameFilterRe, "");
-
-            if(name && name !== user.name) {
-                if(user.name) {
-                    if(user.names instanceof Array) {
-                        user.names.push(user.name);
-                    } else {
-                        user.names = [name];
-                    }
-                    delete this.usersByName[user.name];
-                }
-
-                user.name = name;
-                this.usersByName[name] = user;
-
-                this.saveUserlist();
-            }
         },
         getUserString: function(user) {
             var user = this.getUser(user);
@@ -282,7 +281,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     users.forEach(function(user) {
                         usersById[user.id] = user;
                         
-                        if(user.name) usersByName[user.name] = user;
+                        if(user.name) usersByName[user.name.toLowerCase()] = user;
                     });
                 }
             }
@@ -485,8 +484,10 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 ignored = false,
                 idString, label, labelString = "";
 
+
+            this.registerUser(id, name);
+
             if(user) {
-                this.setUsername(user, name);
                 // Has label?
                 label = this.getLabel(user.label);
 
@@ -494,8 +495,6 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
                 altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
-            } else if(id) {
-                this.registerUser(id, name);
             }
 
             idString = altNames
