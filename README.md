@@ -1,4 +1,4 @@
-# diggit-chathelper v0.3.2-beta2
+# diggit-chathelper v0.3.2
 
 A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
