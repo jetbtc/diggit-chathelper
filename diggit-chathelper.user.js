@@ -9,7 +9,7 @@
 var jetstuff = window.jetstuff = jetstuff || {};
 (function() {
     var demoObj = document.createElement('a'),
-        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 6px;list-style:none}.jetstuff-labellist{font-size:12px;margin:0 0 6px;padding:0 6px 0 0;list-style:none;}.jetstuff-labellist li{margin-bottom:3px;padding-left:12px;}.jetstuff-labellist li:last-child{margin-bottom:0}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
+        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.infomsg a{color:#31c471;text-decoration:underline;}.infomsg a:hover{text-decoration:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 6px;list-style:none}.jetstuff-labellist{font-size:12px;margin:0 0 6px;padding:0 6px 0 0;list-style:none;}.jetstuff-labellist li{margin-bottom:3px;padding-left:12px;}.jetstuff-labellist li:last-child{margin-bottom:0}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -41,7 +41,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
@@ -313,6 +313,62 @@ var jetstuff = window.jetstuff = jetstuff || {};
             
             return false;
         },
+        getLatestBlock: function(callback) {
+            $.getJSON('https://bitcoin.toshi.io/api/v0/blocks/latest', function(data) {
+                var timediff = 0,
+                    timestr = " ",
+                    txcount = 0,
+                    hours, min, sec;
+
+                if(!data) {
+                    return callback("Could not retrieve block data.");
+                }
+
+                if(data.created_at) {
+                    timediff = Math.max(0, Date.now() - new Date(data.created_at).getTime());
+
+                    hours = Math.floor( timediff/3600000 );
+                    timediff -= hours * 3600000;
+
+                    min = Math.floor( timediff/60000 );
+                    timediff -= min * 60000;
+
+                    sec = Math.floor( timediff / 1000 );
+
+                    if(hours) timestr += hours+" hours ";
+                    if(min) timestr += min+" minutes ";
+                    if(sec) timestr += sec+" seconds ";
+
+                    timestr += "ago";
+                }
+                return callback(null, {
+                    time: data.created_at,
+                    timediff: timediff,
+                    timestr: timestr,
+                    txcount: data.transactions_count || 0
+                });
+            });
+        },
+        cmdGetBlock: function() {
+            this.getLatestBlock(function(error, data) {
+                if(error) {
+                    return this.showInfoMsg(error);
+                } else {
+                    this.showInfoMsg('The last block was found '+data.timestr+' and included '+data.txcount+' transactions. [via <a href="https://toshi.io/" target="_blank" title="The only site offering an API that\'s not freaking retarded. Cheers.">toshi.io</a>]');
+                }
+            }.bind(this));
+        },
+        cmdTellBlock: function() {
+            this.getLatestBlock(function(error, data) {
+                if(error) {
+                    return this.showInfoMsg(error);
+                } else {
+                    socketio.emit("chat", {
+                        msg: 'The last block was found '+data.timestr
+                    });
+                }
+            }.bind(this));
+        },
         cmdIgnore: function(args) {
             var user = this.getUser(args[0]),
                 name;
@@ -466,6 +522,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 case 'version':
                 case 'v':
                     this.showInfoMsg('chathelper v'+this.version);
+                    break;
+                case 'block':
+                    this.cmdGetBlock();
+                    break;
+                case 'tellblock':
+                case 'tb':
+                    this.cmdTellBlock();
                     break;
                 default:
                     // Treat unrecognized commands as chat message

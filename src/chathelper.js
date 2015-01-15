@@ -41,7 +41,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
@@ -313,6 +313,62 @@ var jetstuff = window.jetstuff = jetstuff || {};
             
             return false;
         },
+        getLatestBlock: function(callback) {
+            $.getJSON('https://bitcoin.toshi.io/api/v0/blocks/latest', function(data) {
+                var timediff = 0,
+                    timestr = " ",
+                    txcount = 0,
+                    hours, min, sec;
+
+                if(!data) {
+                    return callback("Could not retrieve block data.");
+                }
+
+                if(data.created_at) {
+                    timediff = Math.max(0, Date.now() - new Date(data.created_at).getTime());
+
+                    hours = Math.floor( timediff/3600000 );
+                    timediff -= hours * 3600000;
+
+                    min = Math.floor( timediff/60000 );
+                    timediff -= min * 60000;
+
+                    sec = Math.floor( timediff / 1000 );
+
+                    if(hours) timestr += hours+" hours ";
+                    if(min) timestr += min+" minutes ";
+                    if(sec) timestr += sec+" seconds ";
+
+                    timestr += "ago";
+                }
+                return callback(null, {
+                    time: data.created_at,
+                    timediff: timediff,
+                    timestr: timestr,
+                    txcount: data.transactions_count || 0
+                });
+            });
+        },
+        cmdGetBlock: function() {
+            this.getLatestBlock(function(error, data) {
+                if(error) {
+                    return this.showInfoMsg(error);
+                } else {
+                    this.showInfoMsg('The last block was found '+data.timestr+' and included '+data.txcount+' transactions. [via <a href="https://toshi.io/" target="_blank" title="The only site offering an API that\'s not freaking retarded. Cheers.">toshi.io</a>]');
+                }
+            }.bind(this));
+        },
+        cmdTellBlock: function() {
+            this.getLatestBlock(function(error, data) {
+                if(error) {
+                    return this.showInfoMsg(error);
+                } else {
+                    socketio.emit("chat", {
+                        msg: 'The last block was found '+data.timestr
+                    });
+                }
+            }.bind(this));
+        },
         cmdIgnore: function(args) {
             var user = this.getUser(args[0]),
                 name;
@@ -466,6 +522,13 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 case 'version':
                 case 'v':
                     this.showInfoMsg('chathelper v'+this.version);
+                    break;
+                case 'block':
+                    this.cmdGetBlock();
+                    break;
+                case 'tellblock':
+                case 'tb':
+                    this.cmdTellBlock();
                     break;
                 default:
                     // Treat unrecognized commands as chat message
