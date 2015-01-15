@@ -16,7 +16,7 @@ A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
 ### Updating
 
-- Click +install again
+- Click this: [+update](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
 - Refresh diggit
 - No more steps. Enjoy!
 
