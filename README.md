@@ -40,6 +40,8 @@ The following commands are available as of now:
 - `!labels` - A list of labels you created
 - `!label` - A list of users you labeled
 - `!label [user] [labelname]` - Label/highlight a user. `labelname` is optional.
+- `!block` - Get info about when the last block was found.
+- `!tb` - Send info about the last block in chat. **Important:** This sends a message on your behalf.
 
 Examples:
 
@@ -60,6 +62,10 @@ Examples:
 - `!labels` - To see check if any other labels are left (at least `default`)
 
 ### Changelog
+
+#### v0.3.3
+- Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
+- Also added `!tellblock`/`!tb` to let others know without copy/pasting. **This posts a message on your behalf.**
 
 #### v0.3.2
 - Major restructuring of the locally kept user directory for more flexibility!
