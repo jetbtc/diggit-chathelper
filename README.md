@@ -106,5 +106,3 @@ Suggestions are welcome! And so are pull requests.
 ### Donations
 
 Tip me all you have! You'll have to do it manually since I didn't get around to add that to this script just yet. JK. Tips are welcome, though!
-
-*(I'm jet, my ID on the site is `1761`. Totally forgot about that..)*
