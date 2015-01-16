@@ -6,7 +6,7 @@ A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
 - Make sure you actually want to install this. **Do NOT trust strangers with your Bitcoins. Ever.**
 - You need Firefox
-- Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon
+- Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon. *(requires a restart)*
 - **Important:** If you have a version earlier than v0.3.0, disable it! Go to diggit, click the arrow next to the Greasemonkey icon and uncheck `diggit-chathelper v0.2.x`
 - Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
 - Refresh diggit
