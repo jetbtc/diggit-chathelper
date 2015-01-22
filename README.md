@@ -66,6 +66,7 @@ Examples:
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
 - Also added `!tellblock`/`!tb` to let others know without copy/pasting. **This posts a message on your behalf.**
+- Hovering over the users id shows a full list of previous tracked names again.
 
 #### v0.3.2
 - Major restructuring of the locally kept user directory for more flexibility!

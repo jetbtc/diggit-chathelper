@@ -557,7 +557,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 if(label) {
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
-                altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
+                altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.join(', ') : "";
             }
 
             idString = altNames

@@ -2,7 +2,7 @@
 // @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.3.3-beta1
+// @version     0.3.3-beta2
 // @grant       none
 // ==/UserScript==
 
@@ -28,7 +28,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
-        version: '0.3.3-beta1',
+        version: '0.3.3-beta2',
         chatIgnore: true,
         chatDrop: true,
         unignorable: [0, 1],
@@ -557,7 +557,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 if(label) {
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
-                altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.slice(0,-1).join(', ') : "";
+                altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.join(', ') : "";
             }
 
             idString = altNames
