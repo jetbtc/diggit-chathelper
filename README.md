@@ -28,8 +28,10 @@ The following commands are available as of now:
 
 - `!help` - Get a help message with a summary of the available commands.
 - `!version` - Check the current version number. Compare with the one on the github page
+- `!user [user]` - Check the profile of a user. Same functionality as clicking a U:User link in chat, or clicking a users name.
+- `!game [gameId]` - Check game details. Same as clicking G:gameId links in chat.
 - `!ignore` - A list of ignored users
-- `!ignore [useruser]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
+- `!ignore [user]` - Ignore users. Their names will be orange and the message will be hidden by default. You can hover over the names to show the message.
 - `!drop` - A list of dropped users
 - `!ignore on/off` - Toggle ignoring on/off to get an idea what this script is saving you from
 - `!drop on/off` - Toggle dropping of messages on/off
@@ -53,13 +55,15 @@ Examples:
 - `!drop 8760` - Completely hide that stuff.
 - `!unignore 8760` - That would work.
 - `!ignore off` - The better choice: Temporarily turn ignoring off.
-- `!ignore on` - And to get it back.. same works for `!drop`
+- `!ignore on` - And to get it back.. also works for `!drop`
 - `!createlabel friend orange` - Create a label named `friend` in orange, with the default weight of 3
 - `!createlabel friend #FF0 5` - Make the friend label yellow by using a hex code and a little wider. (Unlike ids, the `#` is important here)
 - `!label 8760 friend` - Highlight a user with the newly created friend label
 - `!unlabel 8760` - Or not.
 - `!removelabel friend` - Remove a label entirely.
 - `!labels` - To see check if any other labels are left (at least `default`)
+- `!user jet` - stalk someone who is offline without having to post their name in chat. WIN
+- `!game 232144` - Check the game details of that game. Simple as that.
 
 ### Changelog
 
@@ -67,6 +71,7 @@ Examples:
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
 - Also added `!tellblock`/`!tb` to let others know without copy/pasting. **This posts a message on your behalf.**
 - Hovering over the users id shows a full list of previous tracked names again.
+- Added `!profile` and `!game`
 
 #### v0.3.2
 - Major restructuring of the locally kept user directory for more flexibility!
