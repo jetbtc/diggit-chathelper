@@ -51,7 +51,7 @@ Examples:
 - `!ignore 8760` - Ignore testificate, the guy I use to test stuff.
 - `!ignore 8,760` - fine, too
 - `!ignore #8760` - yep, works.
-- `!ignore testuser` - **New:** Optionally use names everywhere you had to use ids earler!
+- `!ignore testuser` - **New:** Optionally use names everywhere you had to use ids earlier!
 - `!drop 8760` - Completely hide that stuff.
 - `!unignore 8760` - That would work.
 - `!ignore off` - The better choice: Temporarily turn ignoring off.
@@ -70,8 +70,8 @@ Examples:
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
 - Also added `!tellblock`/`!tb` to let others know without copy/pasting. **This posts a message on your behalf.**
-- Hovering over the users id shows a full list of previous tracked names again.
 - Added `!profile` and `!game`
+- Fix: Hovering over the users id shows a full list of previous tracked names again.
 
 #### v0.3.2
 - Major restructuring of the locally kept user directory for more flexibility!
