@@ -45,6 +45,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
+        nameCheckRe: /^[a-z0-9]{1,12}$/i,
         init: function() {
             this.loadUserlist();
             this.loadLabels();
@@ -478,11 +479,24 @@ var jetstuff = window.jetstuff = jetstuff || {};
             }
         },
         cmdProfile: function(args) {
-            var user = this.getUser(args[0]);
+            var user = this.getUser(args[0]),
+                id = parseInt(args[0]);
 
-            socketio.emit("get_user_details", {
-                userid: user.id
-            });
+            if(user) {
+                socketio.emit("get_user_details", {
+                    userid: user.id
+                });
+            } else if(id) {
+                socketio.emit("get_user_details", {
+                    userid: id
+                });
+            } else if(this.nameCheckRe.test(args[0])) {
+                socketio.emit("get_user_details", {
+                    username: args[0]
+                });
+            } else {
+                this.showInfoMsg('Invalid username');
+            }
         },
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
