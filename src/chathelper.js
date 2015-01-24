@@ -41,7 +41,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|profile|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|profile|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
@@ -498,6 +498,18 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.showInfoMsg('Invalid username');
             }
         },
+        cmdGame: function(args) {
+            var id = parseInt(args[0]);
+
+            if(id) {
+                socketio.emit("get_game_details", {
+                    gameid: id
+                });
+            } else {
+                this.showInfoMsg('Invalid game id');
+            }
+            
+        },
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
@@ -513,6 +525,9 @@ var jetstuff = window.jetstuff = jetstuff || {};
                     break;
                 case 'profile':
                     this.cmdProfile(args);
+                    break;
+                case 'game':
+                    this.cmdGame(args);
                     break;
                 case 'ignore':
                     this.cmdIgnore(args);
