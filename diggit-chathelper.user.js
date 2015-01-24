@@ -41,7 +41,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|profile|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|user|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
@@ -478,7 +478,7 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 this.showInfoMsg('Not working. Is the user id valid?');
             }
         },
-        cmdProfile: function(args) {
+        cmdUser: function(args) {
             var user = this.getUser(args[0]),
                 id = parseInt(args[0]);
 
@@ -523,8 +523,8 @@ var jetstuff = window.jetstuff = jetstuff || {};
                 case 'help':
                     this.showInfoMsg(helptext);
                     break;
-                case 'profile':
-                    this.cmdProfile(args);
+                case 'user':
+                    this.cmdUser(args);
                     break;
                 case 'game':
                     this.cmdGame(args);
