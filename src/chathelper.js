@@ -6,7 +6,7 @@
 // @grant       none
 // ==/UserScript==
 
-var jetstuff = window.jetstuff = jetstuff || {};
+window.jetstuff = window.jetstuff || {};
 (function() {
     var demoObj = document.createElement('a'),
         style = $('<style>').append('{{styles}}').appendTo(document.head),
