@@ -67,6 +67,9 @@ Examples:
 
 ### Changelog
 
+#### v0.3.4
+- Better support for multiple of my scripts in preparation for.. more scripts.
+
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
 - Also added `!tellblock`/`!tb` to let others know without copy/pasting. **This posts a message on your behalf.**
