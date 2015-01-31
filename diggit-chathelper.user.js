@@ -358,7 +358,7 @@ window.jetstuff = window.jetstuff || {};
                 if(error) {
                     return this.showInfoMsg(error);
                 } else {
-                    this.showInfoMsg('The last block was found '+data.timestr+' and included '+data.txcount+' transactions. [via <a href="https://toshi.io/" target="_blank" title="The only site offering an API that\'s not freaking retarded. Cheers.">toshi.io</a>]');
+                    this.showInfoMsg('The last block was found '+data.timestr+' and included '+data.txcount+' transactions. [via <a href="https://blockr.io/" target="_blank">blockr.io</a>]');
                 }
             }.bind(this));
         },
