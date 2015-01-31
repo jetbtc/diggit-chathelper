@@ -315,8 +315,9 @@ window.jetstuff = window.jetstuff || {};
             return false;
         },
         getLatestBlock: function(callback) {
-            $.getJSON('https://bitcoin.toshi.io/api/v0/blocks/latest', function(data) {
-                var timediff = 0,
+            $.getJSON('//btc.blockr.io/api/v1/block/info/latest', function(xhr) {
+                var data = xhr.data || {},
+                    timediff = 0,
                     timestr = " ",
                     txcount = 0,
                     hours, min, sec;
@@ -325,8 +326,8 @@ window.jetstuff = window.jetstuff || {};
                     return callback("Could not retrieve block data.");
                 }
 
-                if(data.created_at) {
-                    timediff = Math.max(0, Date.now() - new Date(data.created_at).getTime());
+                if(data.time_utc) {
+                    timediff = Math.max(0, Date.now() - new Date(data.time_utc).getTime());
 
                     hours = Math.floor( timediff/3600000 );
                     timediff -= hours * 3600000;
@@ -341,12 +342,14 @@ window.jetstuff = window.jetstuff || {};
                     if(sec) timestr += sec+" seconds ";
 
                     timestr += "ago";
+                } else {
+                    timestr = "[unknown time, sorry]";
                 }
+
                 return callback(null, {
-                    time: data.created_at,
-                    timediff: timediff,
+                    time: data.time_utc,
                     timestr: timestr,
-                    txcount: data.transactions_count || 0
+                    txcount: data.nb_txs || 0
                 });
             });
         },
