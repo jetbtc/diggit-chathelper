@@ -69,6 +69,7 @@ Examples:
 
 #### v0.3.4
 - Better support for multiple of my scripts in preparation for.. more scripts.
+- Block commands switched from toshi.io to [blockr.io](http://btc.blockr.io/)
 
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
