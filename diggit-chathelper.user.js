@@ -2,7 +2,7 @@
 // @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.3.3
+// @version     0.3.4-beta1
 // @grant       none
 // ==/UserScript==
 
@@ -28,7 +28,7 @@ window.jetstuff = window.jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
-        version: '0.3.3',
+        version: '0.3.4-beta1',
         chatIgnore: true,
         chatDrop: true,
         unignorable: [0, 1],
@@ -322,13 +322,10 @@ window.jetstuff = window.jetstuff || {};
                     txcount = 0,
                     hours, min, sec;
 
-                console.log(data);
-
                 if(!data) {
                     return callback("Could not retrieve block data.");
                 }
 
-                console.log(data.time_utc, !!data.time_utc);
                 if(data.time_utc) {
                     timediff = Math.max(0, Date.now() - new Date(data.time_utc).getTime());
 
@@ -345,9 +342,10 @@ window.jetstuff = window.jetstuff || {};
                     if(sec) timestr += sec+" seconds ";
 
                     timestr += "ago";
-
-                    console.log(timestr, timediff);
+                } else {
+                    timestr = "[unknown time, sorry]";
                 }
+
                 return callback(null, {
                     time: data.time_utc,
                     timestr: timestr,
