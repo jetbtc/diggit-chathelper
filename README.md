@@ -4,15 +4,30 @@ A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
 ### Installation
 
-- Make sure you actually want to install this. **Do NOT trust strangers with your Bitcoins. Ever.**
-- You need Firefox
-- Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon. *(requires a restart)*
-- **Important:** If you have a version earlier than v0.3.0, disable it! Go to diggit, click the arrow next to the Greasemonkey icon and uncheck `diggit-chathelper v0.2.x`
-- Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
-- Refresh diggit
-- Done!
+**Note**: After installing the script and refreshing the site you should see users IDs next to their usernames. If you do, it worked and you're done.
 
-**Info:** Peoples user ID will show up next to their names in chat. That's how you can tell it worked.
+#### Firefox
+
+If you have a version earlier than v0.3.0, disable it! Go to diggit, click the arrow next to the Greasemonkey icon and uncheck `diggit-chathelper v0.2.x`
+
+- Install the [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) addon. *(requires a restart)*
+- Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
+- Click `Install` in the Greasemonkey popup
+- Refresh diggit
+
+#### Chrome
+
+Chrome support is **not** official. New versions are not being tested in Chrome before being released. Since Firefox and Chrome are *(about)* equally good with Javascript and none of the Greasemonkey/Tampermonkey features are being used, there should not be any problems.
+
+- Install the [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) addon.
+- Click this: [+install](https://github.com/jetbtc/diggit-chathelper/raw/master/diggit-chathelper.user.js)
+- Click `Install` in the Tampermonkey popup
+- Refresh diggit
+
+#### Internet Explorer / Opera / Others
+
+- Get a proper browser
+- See the Firefox or Chrome instructions
 
 ### Updating
 
@@ -45,7 +60,7 @@ The following commands are available as of now:
 - `!block` - Get info about when the last block was found.
 - `!tb` - Send info about the last block in chat. **Important:** This sends a message on your behalf.
 
-Examples:
+#### Examples
 
 - `!ignore` - Get a list of people you're ignoring
 - `!ignore 8760` - Ignore testificate, the guy I use to test stuff.
@@ -65,11 +80,22 @@ Examples:
 - `!user jet` - stalk someone who is offline without having to post their name in chat. WIN
 - `!game 232144` - Check the game details of that game. Simple as that.
 
+### Security
+
+I am doing my best to keep this script secure.
+
+Complexity is being kept as low as possible, user inputs use the sites own functionality or are being treated properly. Output is being sanitized.
+
+I have no intention to steal Bitcoins whatsoever, and I am encouraging you to look at - and audit - the source code all to your liking.
+
+Yet, this is a hobby project. Please be aware of this.
+
 ### Changelog
 
 #### v0.3.4
 - Better support for multiple of my scripts in preparation for.. more scripts.
 - Block commands switched from toshi.io to [blockr.io](http://btc.blockr.io/)
+- Restructured README
 
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
@@ -115,4 +141,4 @@ Suggestions are welcome! And so are pull requests.
 
 ### Donations
 
-Tip me all you have! You'll have to do it manually since I didn't get around to add that to this script just yet. JK. Tips are welcome, though!
+If you like the chathelper and consider it helpful, tips on diggit are much appreciated.
