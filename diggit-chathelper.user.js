@@ -600,6 +600,18 @@ window.jetstuff = window.jetstuff || {};
                     labelString = label ? 'style="border-left:'+label.width+'px solid '+label.color+';margin-left:'+(-label.width-6)+'px;padding-left:6px;"' : "";
                 }
                 altNames = user.names && user.names.length > 1 ? "Previous names: " + user.names.join(', ') : "";
+
+                // Take care of spammers
+                if(!user.messages) {
+                    user.messages = [];
+                }
+
+                user.messages.push(msg);
+                if(user.messages.length > 4) {
+                    user.messages = user.messages.slice(-4);
+                }
+
+                this.checkSpam(user);
             }
 
             idString = altNames
@@ -630,6 +642,7 @@ window.jetstuff = window.jetstuff || {};
             if($chatbox.scrollTop() + $chatbox.innerHeight() + 100 < $chatbox.get(0).scrollHeight) {
                 doScroll = false;
             }
+
             msg = msg.split(" ");
 
             for(var i = 0; i < msg.length; i++) {
@@ -695,11 +708,42 @@ window.jetstuff = window.jetstuff || {};
                 }, "slow");
             }
         },
+        checkSpam: function(user) {
+            var user = this.getUser(user),
+                m = user.messages || [];
+
+            // Eh.
+            if(myuser.getID() !== 1761) {
+                console.log('not admin');
+                return;
+            }
+
+            // Don't mute twice
+            if(user.lastMute && user.lastMute > Date.now()) {
+                console.log('user already muted');
+                return;
+            }
+
+            var match = m[m.length-1].match(/PORNSTARGALS/gi);
+
+            if(match && match.length) {
+                this.showInfoMsg("Detected spammer: "+user.id+". Muted for 60 minutes.");
+                user.muteCount = user.muteCount ? 1 : user.muteCount++;
+                user.lastMute = Date.now() + (60 * 60 * 1000);
+                this.saveUserlist();
+
+                socketio.emit('mod_global_mute', {
+                    userid: user.id,
+                    mute: true,
+                    time: (60 * 60 * 1000)
+                });
+            }
+        },
         showInfoMsg: function(msg) {
             var $chatbox = $("#chatbox"),
                 html = '<div class="chatmsgcontainer"><div class="infomsg">' + msg + '</div></div>';
 
-            $chatbox.append(html).animate({
+            $chatbox.append(html).stop(true).animate({
                 "scrollTop": $chatbox[0].scrollHeight
             }, "slow");
         },
