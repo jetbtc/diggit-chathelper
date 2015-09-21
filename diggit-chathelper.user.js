@@ -9,7 +9,7 @@
 window.jetstuff = window.jetstuff || {};
 (function() {
     var demoObj = document.createElement('a'),
-        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.infomsg a{color:#31c471;text-decoration:underline;}.infomsg a:hover{text-decoration:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist{font-size:12px;margin:0 0 6px;padding:0 6px;list-style:none}.jetstuff-labellist{font-size:12px;margin:0 0 6px;padding:0 6px 0 0;list-style:none;}.jetstuff-labellist li{margin-bottom:3px;padding-left:12px;}.jetstuff-labellist li:last-child{margin-bottom:0}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
+        style = $('<style>').append('.infomsg,.chatmsg{position:relative;overflow:hidden;}.infomsg .chattime,.chatmsg .chattime{position:absolute;top:0;right:0;float:none}.infomsg a{color:#31c471;text-decoration:underline;}.infomsg a:hover{text-decoration:none}.jetstuff-ignoreduser{position:relative;}.jetstuff-ignoreduser .chatusertext,.jetstuff-ignoreduser .chattime,.jetstuff-ignoreduser .jetstuff-userid{color:#b57a5a}.jetstuff-ignoreduser .chatmsg{position:absolute;top:100%;left:0;right:0;opacity:.92;background-color:#344c45;transform-origin:0 0;transform:rotateX(-90deg);transition:transform .15s linear;z-index:2}.jetstuff-ignoreduser:hover .chatmsg{margin-bottom:0;transform:rotateX(0)}.jetstuff-highlight{border-left:3px solid #31c471;margin-left:-7px;padding-left:4px}.jetstuff-mention{border-color:#ffed75}.jetstuff-userid{color:#31c471;vertical-align:text-top;cursor:default;font-size:11px;margin-left:4px;opacity:.5}.jetstuff-hasalts{cursor:pointer}.jetstuff-help{font-size:12px;overflow:hidden;margin-bottom:6px;}.jetstuff-help dt{float:left;clear:left;font-weight:normal;font-style:normal;}.jetstuff-help dt:after{content:"-";display:inline-block;padding:0 6px}.jetstuff-help dd{margin-left:24px}.jetstuff-userlist,.jetstuff-filterlist{font-size:12px;margin:0 0 6px;padding:0 6px;list-style:none}.jetstuff-labellist{font-size:12px;margin:0 0 6px;padding:0 6px 0 0;list-style:none;}.jetstuff-labellist li{margin-bottom:3px;padding-left:12px;}.jetstuff-labellist li:last-child{margin-bottom:0}.jetstuff-credits,.jetstuff-summary{opacity:.66;font-size:12px;}.jetstuff-credits a,.jetstuff-summary a{color:#31c471;text-decoration:underline;outline:0;}.jetstuff-credits a:hover,.jetstuff-summary a:hover,.jetstuff-credits a:active,.jetstuff-summary a:active,.jetstuff-credits a:focus,.jetstuff-summary a:focus{text-decoration:none}').appendTo(document.head),
         helptext = 'Chathelper Help <dl class="jetstuff-help">'
                 + '<dt>!help</dt> <dd>Get this message</dd>'
                 + '<dt>!version</dt> <dd>Check the current version number. Compare with the one on the github page</dd>'
@@ -36,7 +36,7 @@ window.jetstuff = window.jetstuff || {};
         usersById: {},
         usersByName: {},
         hidespam: true,
-        filterList: ["regexp:(?:http|https|ftp)://"],
+        filterList: ["regex:(?:http|https|ftp)://"],
         filterReList: [],
         config: {
           hidespam: true,
@@ -178,8 +178,8 @@ window.jetstuff = window.jetstuff || {};
         },
         updateSpamfilters: function() {
             this.filterReList = this.filterList.map(function(str) {
-                if(str.indexOf('regexp:') === 0) {
-                  return new RegExp(str.substr(7), 'i');
+                if(str.indexOf('regex:') === 0) {
+                  return new RegExp(str.substr(6), 'i');
                 } else {
                   return str;
                 }
