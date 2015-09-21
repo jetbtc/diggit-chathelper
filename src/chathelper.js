@@ -35,6 +35,12 @@ window.jetstuff = window.jetstuff || {};
         userlist: {},
         usersById: {},
         usersByName: {},
+        hidespam: true,
+        filterList: [],
+        filterReList: [],
+        config: {
+          automute: false
+        },
         labels: {
             "default": {
                 width: 3,
@@ -151,6 +157,21 @@ window.jetstuff = window.jetstuff || {};
         },
         saveLabels: function() {
             localStorage.setItem('jetstuff.chathelper.labels', JSON.stringify(this.labels));
+        },
+        loadSpamfilters: function() {
+            var data = localStorage.getItem('jetstuff.chathelper.filters');
+
+            if(data) {
+                this.filterList = JSON.parse(data);
+            }
+        },
+        updateSpamFilters: function() {
+            this.filterReList = this.filterList.map(function(str) {
+                return new RegExp(str, 'i');
+            });
+        },
+        saveSpamfilters: function() {
+            localStorage.setItem('jetstuff.chathelper.filters', JSON.stringify(this.filterList));
         },
         labelUser: function(user, labelName) {
             var user = this.getUser(user),
@@ -587,6 +608,7 @@ window.jetstuff = window.jetstuff || {};
                 user = this.getUser(id),
                 altNames = "",
                 ignored = false,
+                isSpam = false,
                 idString, label, labelString = "";
 
 
@@ -611,14 +633,14 @@ window.jetstuff = window.jetstuff || {};
                     user.messages = user.messages.slice(-4);
                 }
 
-                this.checkSpam(user);
+                isSpam = this.checkSpam(user);
             }
 
             idString = altNames
                         ? ' <span class="jetstuff-userid jetstuff-hasalts" title="'+altNames+'">'+(id || "")+'</span> '
                         : ' <span class="jetstuff-userid">'+(id || "")+'</span> ';
 
-            if (!msg) {
+            if (!msg || (isSpam && this.config.hidespam)) {
                 return;
             }
 
@@ -710,11 +732,14 @@ window.jetstuff = window.jetstuff || {};
         },
         checkSpam: function(user) {
             var user = this.getUser(user),
-                m = user.messages || [];
+                filters = this.filterReList,
+                m = user.messages || [],
+                muteDuration = 0,
+                isSpam = false,
+                msg = "";
 
             // Eh.
-            if(myuser.getID() !== 1761) {
-                console.log('not admin');
+            if(!filters.length || !m.length) {
                 return;
             }
 
@@ -724,20 +749,32 @@ window.jetstuff = window.jetstuff || {};
                 return;
             }
 
-            var match = m[m.length-1].match(/PORNSTARGALS/gi);
+            msg = m[m.length - 1];
 
-            if(match && match.length) {
-                this.showInfoMsg("Detected spammer: "+user.id+". Muted for 60 minutes.");
-                user.muteCount = user.muteCount ? 1 : user.muteCount++;
-                user.lastMute = Date.now() + (60 * 60 * 1000);
+            // Spam
+            filters.forEach(function(filter) {
+              isSpam = isSpam | filter.test(msg);
+            });
+
+            if(isSpam) {
+              muteDuration = 60 * 6e4;
+            }
+
+            if(muteDuration && myuser.getStaffLevel() && this.config.automute) {
+                user.muteCount = user.muteCount ? user.muteCount++ : 1;
+                user.lastMute = Date.now() + muteDuration;
                 this.saveUserlist();
+
+                // this.showInfoMsg("Auto-muting user "+this.getUserString(user));
 
                 socketio.emit('mod_global_mute', {
                     userid: user.id,
                     mute: true,
-                    time: (60 * 60 * 1000)
+                    time: muteDuration
                 });
             }
+
+            return isSpam;
         },
         showInfoMsg: function(msg) {
             var $chatbox = $("#chatbox"),
