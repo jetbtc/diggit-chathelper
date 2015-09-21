@@ -48,7 +48,7 @@ window.jetstuff = window.jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|user|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes|hidespam|automute|filters|f|addfilter|af|deletefilter|df)\s+(.*)?/,
+        commandRe: /^!(help|version|v|user|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes|hidespam|automute|filters|f|addfilter|af|deletefilter|df)\b\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
