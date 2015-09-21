@@ -48,7 +48,7 @@ window.jetstuff = window.jetstuff || {};
                 color: '#31c471'
             }
         },
-        commandRe: /^!(help|version|v|user|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes)\s*(.*)?/,
+        commandRe: /^!(help|version|v|user|game|block|tellblock|tb|ignore|drop|unignore|undrop|hl|labels|label|unhl|unlabel|addlabel|createlabel|removelabel|deletelabel|tip|rain|rainyes|hidespam|automute|filters|f|addfilter|af|deletefilter|df)\s*(.*)?/,
         argsplitRe: /\s+/,
         labelFilterRe: /[^a-z0-9\-]/gi,
         nameFilterRe: /[^a-z0-9]/gi,
@@ -538,6 +538,47 @@ window.jetstuff = window.jetstuff || {};
             }
             
         },
+        cmdListFilters: function(args) {
+            var filters = this.filterList,
+                filter;
+
+            html = "Filters:";
+
+            if(filters) {
+                html += '<ul class="jetstuff-filterlist">';
+                for(var i=0; i<filters.length; i++) {
+                    filter = filters[0];
+                    html += '<li>['+(i+1)+'] - '+filter+'</li>';
+                }
+                html += '</ul><div class="jetstuff-summary">Total: '+filters.length+'</div>';
+            } else {
+                html = "No filters added. Use `!addfilter [filterstring]`";
+            }
+            this.showInfoMsg(html);
+        },
+        cmdAddFilter: function(filter) {
+            if(filter) {
+                this.filterList.push(filter);
+                this.saveSpamfilters();
+                this.updateSpamfilters();
+
+                this.showInfoMsg("Added filter: "+filter);
+            }
+        },
+        cmdDeleteFilter: function(args) {
+            var filters = this.filterList,
+                id = parseInt(args[0]),
+                filter;
+
+            if(id && id <= filters.length) {
+                filter = filters[id-1];
+                this.filterList.splice(id-1,1);
+                this.saveSpamfilters();
+                this.updateSpamfilters();
+
+                this.showInfoMsg("Removed filter: "+filter);
+            }
+        },
         commandHandler: function(msg) {
             var match = msg.match(this.commandRe) || [],
                 command = match[1] ? match[1] : null,
@@ -596,6 +637,18 @@ window.jetstuff = window.jetstuff || {};
                 case 'tellblock':
                 case 'tb':
                     this.cmdTellBlock();
+                    break;
+                case 'filters':
+                case 'f':
+                    this.cmdListFilters();
+                    break;
+                case 'addfilter':
+                case 'af':
+                    this.cmdAddFilter(match[2]);
+                    break;
+                case 'deletefilter':
+                case 'df':
+                    this.cmdDeleteFilter(args);
                     break;
                 default:
                     // Treat unrecognized commands as chat message
