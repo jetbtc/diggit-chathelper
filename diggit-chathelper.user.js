@@ -2,7 +2,7 @@
 // @name        diggit-chathelper
 // @namespace   https://github.com/jetbtc/diggit-chathelper
 // @include     https://diggit.io/
-// @version     0.3.4-beta1
+// @version     0.3.4
 // @grant       none
 // ==/UserScript==
 
@@ -28,7 +28,7 @@ window.jetstuff = window.jetstuff || {};
     }
 
     $.extend(ChatHelper.prototype, {
-        version: '0.3.4-beta1',
+        version: '0.3.4',
         chatIgnore: true,
         chatDrop: true,
         unignorable: [0, 1],
