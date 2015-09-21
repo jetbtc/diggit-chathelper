@@ -174,6 +174,14 @@ Yet, this is a hobby project. Please be aware of this.
 
 Suggestions are welcome! And so are pull requests.
 
-### Donations
+### Feedback
 
-If you like the chathelper and consider it helpful, tips on diggit are much appreciated.
+I would love your feedback on this project! Suggestions and bug reports are very welcome and I will of course try to answer any questions.
+
+You can probably find me in the diggit chat (jet, ID 1761). Alternatively, create issues in this project or mail me at jetbtc [at] outlook.com
+
+If you like the chathelper, you are very welcome to send a coffee or two my way:
+
+**17eGP2ksBHfWxz23fC3PZA7XVSJ7KrUQKE**
+
+Thank you!
