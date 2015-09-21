@@ -36,9 +36,10 @@ window.jetstuff = window.jetstuff || {};
         usersById: {},
         usersByName: {},
         hidespam: true,
-        filterList: [],
+        filterList: ["(?:http|https|ftp)://"],
         filterReList: [],
         config: {
+          hidespam: true,
           automute: false
         },
         labels: {
@@ -55,6 +56,7 @@ window.jetstuff = window.jetstuff || {};
         init: function() {
             this.loadUserlist();
             this.loadLabels();
+            this.loadSpamfilters();
 
             this.cleanup();
 
@@ -164,14 +166,16 @@ window.jetstuff = window.jetstuff || {};
             if(data) {
                 this.filterList = JSON.parse(data);
             }
-        },
-        updateSpamFilters: function() {
-            this.filterReList = this.filterList.map(function(str) {
-                return new RegExp(str, 'i');
-            });
+            
+            this.updateSpamfilters();
         },
         saveSpamfilters: function() {
             localStorage.setItem('jetstuff.chathelper.filters', JSON.stringify(this.filterList));
+        },
+        updateSpamfilters: function() {
+            this.filterReList = this.filterList.map(function(str) {
+                return new RegExp(str, 'i');
+            });
         },
         labelUser: function(user, labelName) {
             var user = this.getUser(user),
@@ -745,7 +749,6 @@ window.jetstuff = window.jetstuff || {};
 
             // Don't mute twice
             if(user.lastMute && user.lastMute > Date.now()) {
-                console.log('user already muted');
                 return;
             }
 
@@ -764,8 +767,6 @@ window.jetstuff = window.jetstuff || {};
                 user.muteCount = user.muteCount ? user.muteCount++ : 1;
                 user.lastMute = Date.now() + muteDuration;
                 this.saveUserlist();
-
-                // this.showInfoMsg("Auto-muting user "+this.getUserString(user));
 
                 socketio.emit('mod_global_mute', {
                     userid: user.id,
