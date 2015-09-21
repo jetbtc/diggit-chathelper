@@ -1,4 +1,4 @@
-# diggit-chathelper v0.3.4-beta1
+# diggit-chathelper v0.3.4
 
 A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
@@ -80,6 +80,39 @@ The following commands are available as of now:
 - `!user jet` - stalk someone who is offline without having to post their name in chat. WIN
 - `!game 232144` - Check the game details of that game. Simple as that.
 
+### Filters
+
+With the wave of spam that is hitting the chat lately, and the lack of proper moderation and especially administration, the Chathelper now drops all messages containing links by default.
+
+This is done via patternmatching using regular expressions, and can be adjusted to your liking.
+
+Active filter patterns can be viewed with the `!filter`/`!f` command in the chat.
+
+#### Adding filters
+
+Filters can be added with the `!addfilter`/`!af` command followed by the pattern, which can either be any string, or a regular expression body if it starts with `regexp:`.
+
+##### Examples:
+
+- `!af regex:(?:http|https|ftp)://` - Add the default pattern, dropping all messages containing links.
+- `!af [deposit][withdraw]` - Drop beggars pasting their balance
+- `!af http://goo.gl/` - Drop all links using this link shortener
+- `!af ?ref=` - Drop all links with this reflink fragment
+
+#### Deleting filters
+
+Deleting filters is done with the `!deletefilter`/`!df` command, followed by the ID given when listing your filters with `!filter`/`!f`
+
+##### Example
+
+    [1] - regex:(?:http|https|ftp)://
+    [2] - [deposit][withdraw] 0.00 b
+    [3] - ?ref=
+
+If your `!f` output looks like this, do `!df 3` to drop the `?ref=` filter.
+
+**Note:** If you want to delete multiple filters, do `!f` inbetween, to make sure you get the right ID
+
 ### Security
 
 I am doing my best to keep this script secure.
@@ -96,6 +129,8 @@ Yet, this is a hobby project. Please be aware of this.
 - Better support for multiple of my scripts in preparation for.. more scripts.
 - Block commands switched from toshi.io to [blockr.io](http://btc.blockr.io/)
 - Restructured README
+- Added text based filtering `!filter`, `!addfilter`, `!deletefilter`
+- Fix: whacky command parsing
 
 #### v0.3.3
 - Added `!block` to get info about the latest block, using [toshi.io](https://toshi.io/)
