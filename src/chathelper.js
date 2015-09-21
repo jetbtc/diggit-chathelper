@@ -36,7 +36,7 @@ window.jetstuff = window.jetstuff || {};
         usersById: {},
         usersByName: {},
         hidespam: true,
-        filterList: ["(?:http|https|ftp)://"],
+        filterList: ["regex:(?:http|https|ftp)://"],
         filterReList: [],
         config: {
           hidespam: true,
@@ -164,7 +164,11 @@ window.jetstuff = window.jetstuff || {};
             var data = localStorage.getItem('jetstuff.chathelper.filters');
 
             if(data) {
-                this.filterList = JSON.parse(data);
+                try {
+                  this.filterList = JSON.parse(data);
+                } catch(e) {
+                  console.error('Could not parse spam filters');
+                }
             }
             
             this.updateSpamfilters();
@@ -174,7 +178,11 @@ window.jetstuff = window.jetstuff || {};
         },
         updateSpamfilters: function() {
             this.filterReList = this.filterList.map(function(str) {
-                return new RegExp(str, 'i');
+                if(str.indexOf('regex:') === 0) {
+                  return new RegExp(str.substr(6), 'i');
+                } else {
+                  return str;
+                }
             });
         },
         labelUser: function(user, labelName) {
@@ -547,7 +555,7 @@ window.jetstuff = window.jetstuff || {};
             if(filters) {
                 html += '<ul class="jetstuff-filterlist">';
                 for(var i=0; i<filters.length; i++) {
-                    filter = filters[0];
+                    filter = filters[i];
                     html += '<li>['+(i+1)+'] - '+filter+'</li>';
                 }
                 html += '</ul><div class="jetstuff-summary">Total: '+filters.length+'</div>';
@@ -559,10 +567,16 @@ window.jetstuff = window.jetstuff || {};
         cmdAddFilter: function(filter) {
             if(filter) {
                 this.filterList.push(filter);
-                this.saveSpamfilters();
-                this.updateSpamfilters();
 
-                this.showInfoMsg("Added filter: "+filter);
+                try {
+                  this.updateSpamfilters();
+                  this.showInfoMsg("Added filter: "+filter);
+                } catch(e) {
+                  this.filterList.pop();
+                  this.showInfoMsg("Invalid filter: "+filter+" - Please make sure to escape regexp characters");
+                }
+
+                this.saveSpamfilters();
             }
         },
         cmdDeleteFilter: function(args) {
@@ -662,14 +676,14 @@ window.jetstuff = window.jetstuff || {};
                 id = data["userid"],
                 name = data["username"],
                 msg = data["msg"],
-                user = this.getUser(id),
                 altNames = "",
                 ignored = false,
                 isSpam = false,
-                idString, label, labelString = "";
+                idString, user, label, labelString = "";
 
 
             this.registerUser(id, name);
+            user = this.getUser(id);
 
             if(user) {
                 // Has label?
@@ -791,7 +805,7 @@ window.jetstuff = window.jetstuff || {};
             var user = this.getUser(user),
                 filters = this.filterReList,
                 m = user.messages || [],
-                muteDuration = 0,
+                muteDuration = 60 * 6e4,
                 isSpam = false,
                 msg = "";
 
@@ -804,7 +818,11 @@ window.jetstuff = window.jetstuff || {};
 
             // Spam
             filters.forEach(function(filter) {
-              isSpam = isSpam | filter.test(msg);
+              if(typeof filter === "string") {
+                isSpam |= msg.indexOf(filter) !== -1;
+              } else {
+                isSpam |= (msg.match(filter)||[]).length > 0;
+              }
             });
 
             // Don't mute twice
@@ -812,11 +830,7 @@ window.jetstuff = window.jetstuff || {};
                 return isSpam;
             }
 
-            if(isSpam) {
-              muteDuration = 60 * 6e4;
-            }
-
-            if(muteDuration && myuser.getStaffLevel() && this.config.automute) {
+            if(isSpam && myuser.getStaffLevel() && this.config.automute) {
                 user.muteCount = user.muteCount ? user.muteCount++ : 1;
                 user.lastMute = Date.now() + muteDuration;
                 this.saveUserlist();
