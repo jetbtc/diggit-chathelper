@@ -800,17 +800,17 @@ window.jetstuff = window.jetstuff || {};
                 return;
             }
 
-            // Don't mute twice
-            if(user.lastMute && user.lastMute > Date.now()) {
-                return;
-            }
-
             msg = m[m.length - 1];
 
             // Spam
             filters.forEach(function(filter) {
               isSpam = isSpam | filter.test(msg);
             });
+
+            // Don't mute twice
+            if(user.lastMute && user.lastMute > Date.now()) {
+                return isSpam;
+            }
 
             if(isSpam) {
               muteDuration = 60 * 6e4;
