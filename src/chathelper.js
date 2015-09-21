@@ -704,7 +704,7 @@ window.jetstuff = window.jetstuff || {};
                     user.messages = user.messages.slice(-4);
                 }
 
-                isSpam = this.checkSpam(user);
+                isSpam = !data["admin"] && (myuser.getID() !== id) && this.checkSpam(user);
             }
 
             idString = altNames
