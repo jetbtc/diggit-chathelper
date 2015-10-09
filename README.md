@@ -1,5 +1,7 @@
 # diggit-chathelper v0.3.4
 
+**IMPORTANT: The sites coldwallet and hotwallet have been drained and the admin of the site has been inactive for ages now. Reports have been coming in that withdrawals are not working properly and nobody is taking care of the issue. SADLY, I HAVE TO RECOMMEND AGAINST TRUSTING DIGGIT.IO FOR NOW**
+
 A bunch of tools for the chat on https://diggit.io - by jet (#1761 on diggit)
 
 ### Installation
